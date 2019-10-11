@@ -487,8 +487,59 @@ bool TargaImage::Filter_Box()
 ///////////////////////////////////////////////////////////////////////////////
 bool TargaImage::Filter_Bartlett()
 {
-    ClearToBlack();
-    return false;
+    auto bart{data};
+
+    // We'll load a vector flattened with the gaussian blurr, and then pull from our original image
+    // while pushing to our copy.
+
+    const valarray<uint32_t> matrix= {
+        1, 2, 3, 2, 1,
+        2, 4, 6, 4, 2,
+        3, 6, 9, 6, 3,
+        2, 4, 6, 4, 2,
+        1, 2, 3, 2, 1
+    };
+    // We'll use a uint32_t to store the result, then scale it down.
+    // We'll have 8bit, multiplied by most a 4bit, needing 12bits, then added together with the most 25 times, so another 5 bits, making
+    // a total of 17bits needed. A 32bit int can hold the entire summation, and arguabbly a 16bit int is all we need for the matrix
+    // itself
+    valarray<uint32_t> result[3];
+    for( auto& v: result ){
+        v.resize(matrix.size());
+    }
+    for( int j = 0; j < _height; ++j ){
+        for( int i = 0; i < _width; ++i ){
+            int xindex = 2;
+            int yindex = -2;
+            // Load the matrix
+            for( size_t k = 0; k < matrix.size(); ++k ){
+                // We'll do it a slow way at first, then think about optimization
+                // The biggest roadblock to a good algorithm is optimizing too early
+                result[RED]  [k] = data[index(clamp(i+xindex, 0, _width-1 ), clamp(j+yindex, 0, _height-1) ) + RED];
+                result[GREEN][k] = data[index(clamp(i+xindex, 0, _width-1 ), clamp(j+yindex, 0, _height-1) ) + GREEN];
+                result[BLUE] [k] = data[index(clamp(i+xindex, 0, _width-1 ), clamp(j+yindex, 0, _height-1) ) + BLUE];
+                // Update indexes
+                if( yindex == 2 ){
+                    --xindex;
+                    yindex = -2;
+                }else{
+                    ++yindex;
+                }
+            } // k
+            // hadamard
+
+            for( size_t i = 0; i < 3; ++i ){
+                result[i] *= matrix;
+            }
+            // Now stuff it back in
+            bart[ index(i,j) + RED ]   = clamp( ((result[RED]  .sum()) / 81 ), 0u, 255u) ;
+            bart[ index(i,j) + GREEN ] = clamp( ((result[GREEN].sum()) / 81 ), 0u, 255u) ;
+            bart[ index(i,j) + BLUE ]  = clamp( ((result[BLUE] .sum()) / 81 ), 0u, 255u) ;
+            // Update indexes
+        } // j
+    } // i
+    swap(data,bart);
+    return true;
 }// Filter_Bartlett
 
 
