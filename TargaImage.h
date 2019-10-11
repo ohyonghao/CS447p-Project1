@@ -25,13 +25,13 @@ class TargaImage
     // methods
     public:
 	    TargaImage(void);
-        TargaImage(uint w, uint h);
-        TargaImage(uint w, uint h, unsigned char *d);
-        TargaImage(uint w, uint h, const std::vector<uchar>& d);
+        TargaImage(int w, int h);
+        TargaImage(int w, int h, unsigned char *d);
+        TargaImage(int w, int h, const std::vector<uchar>& d);
         TargaImage(const TargaImage& image);
 	    ~TargaImage(void);
 
-        std::vector<uchar>	To_RGB(void);	            // Convert the image to RGB format,
+        std::vector<uchar>	To_RGB();	            // Convert the image to RGB format,
         bool Save_Image(const char*);               // save the image to a file
         static TargaImage* Load_Image(char*);       // Load a file and return a pointer to a new TargaImage object.  Returns NULL on failure
 

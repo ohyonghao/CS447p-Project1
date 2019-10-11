@@ -61,7 +61,7 @@ TargaImage::TargaImage() :
 //      Constructor.  Initialize member variables.
 //
 ///////////////////////////////////////////////////////////////////////////////
-TargaImage::TargaImage(uint w, uint h) :
+TargaImage::TargaImage(int w, int h) :
     _width{w},
     _height{h},
     data(w*h*4u)
@@ -76,7 +76,7 @@ TargaImage::TargaImage(uint w, uint h) :
 //      Constructor.  Initialize member variables to values given.
 //
 ///////////////////////////////////////////////////////////////////////////////
-TargaImage::TargaImage(uint w, uint h, unsigned char *d) :
+TargaImage::TargaImage(int w, int h, unsigned char *d) :
     _width{w},
     _height{h}
 {
@@ -94,7 +94,7 @@ TargaImage::TargaImage(uint w, uint h, unsigned char *d) :
 //      Constructor.  Initialize member variables to values given.
 //
 ///////////////////////////////////////////////////////////////////////////////
-TargaImage::TargaImage(uint w, uint h, const vector<uchar> &d):
+TargaImage::TargaImage(int w, int h, const vector<uchar> &d):
     _width{w},
     _height{h},
     data{d}
@@ -131,7 +131,7 @@ TargaImage::~TargaImage()
 //  required.
 //
 ///////////////////////////////////////////////////////////////////////////////
-vector<uchar> TargaImage::To_RGB(void)
+vector<uchar> TargaImage::To_RGB()
 {
     vector<uchar> rgb(static_cast<size_t>(_width * _height * 3));
 
@@ -140,7 +140,7 @@ vector<uchar> TargaImage::To_RGB(void)
 
     auto it = data.cbegin();
     auto ot = rgb.begin();
-    for( ; it < data.cend(); ++it, ++ot ){
+    for( ; it < data.cend(); it+=4, ot+=3 ){
         RGBA_To_RGB( it, ot );
     }
 
@@ -191,7 +191,7 @@ TargaImage* TargaImage::Load_Image(char *filename)
         return nullptr;
     }// if
 
-    temp_data = (unsigned char*)tga_load(filename, &width, &height, TGA_TRUECOLOR_32);
+    temp_data = reinterpret_cast<unsigned char*>(tga_load(filename, &width, &height, TGA_TRUECOLOR_32));
     if (!temp_data)
     {
         cout << "TGA Error: " << tga_error_string(tga_get_last_error()) << endl;
@@ -499,7 +499,7 @@ bool TargaImage::Filter_Gaussian()
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-bool TargaImage::Filter_Gaussian_N( unsigned int N )
+bool TargaImage::Filter_Gaussian_N( unsigned int /*N*/ )
 {
     ClearToBlack();
    return false;
@@ -619,7 +619,7 @@ void TargaImage::RGBA_To_RGB(decltype (data.cbegin()) in, decltype (data.begin()
         double	alpha_scale = 255.0 / alpha;
         int	val;
 
-        for (uint i = 0 ; i < 3 ; ++i)
+        for (int i = 0 ; i < 3 ; ++i)
         {
             val = static_cast<int>(floor(*in) * alpha_scale);
             if (val < 0)
