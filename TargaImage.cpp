@@ -155,14 +155,14 @@ vector<uchar> TargaImage::To_RGB()
 //      Save the image to a targa file. Returns 1 on success, 0 on failure.
 //
 ///////////////////////////////////////////////////////////////////////////////
-bool TargaImage::Save_Image(const char *filename)
+bool TargaImage::Save_Image(const string filename)
 {
     TargaImage	*out_image = Reverse_Rows();
 
     if (! out_image)
 	    return false;
 
-    if (!tga_write_raw(filename, _width, _height, out_image->data.data(), TGA_TRUECOLOR_32))
+    if (!tga_write_raw(filename.data(), _width, _height, out_image->data.data(), TGA_TRUECOLOR_32))
     {
         cout << "TGA Save Error: " <<  tga_error_string(tga_get_last_error()) << endl;
 	    return false;
@@ -180,20 +180,20 @@ bool TargaImage::Save_Image(const char *filename)
 //  must be deleted by caller.  Return nullptr on failure.
 //
 ///////////////////////////////////////////////////////////////////////////////
-TargaImage* TargaImage::Load_Image(char *filename)
+TargaImage* TargaImage::Load_Image(const string filename)
 {
     unsigned char   *temp_data;
     TargaImage	    *temp_image;
     TargaImage	    *result;
-    int		        width, height;
+    int		        width{0}, height{0}; // Initialize to sensible values
 
-    if (!filename)
+    if (filename.empty())
     {
         cout << "No filename given." << endl;
         return nullptr;
     }// if
 
-    temp_data = reinterpret_cast<unsigned char*>(tga_load(filename, &width, &height, TGA_TRUECOLOR_32));
+    temp_data = reinterpret_cast<unsigned char*>(tga_load(filename.data(), &width, &height, TGA_TRUECOLOR_32));
     if (!temp_data)
     {
         cout << "TGA Error: " << tga_error_string(tga_get_last_error()) << endl;

@@ -16,6 +16,7 @@
 #include <FL/Fl_Widget.H>
 #include <stdio.h>
 #include <vector>
+#include <string>
 
 class Stroke;
 class DistanceImage;
@@ -32,8 +33,8 @@ class TargaImage
 	    ~TargaImage(void);
 
         std::vector<uchar>	To_RGB();	            // Convert the image to RGB format,
-        bool Save_Image(const char*);               // save the image to a file
-        static TargaImage* Load_Image(char*);       // Load a file and return a pointer to a new TargaImage object.  Returns NULL on failure
+        bool Save_Image(const std::string);               // save the image to a file
+        static TargaImage* Load_Image(const std::string);       // Load a file and return a pointer to a new TargaImage object.  Returns NULL on failure
 
         bool To_Grayscale();
 
