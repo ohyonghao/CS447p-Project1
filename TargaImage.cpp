@@ -659,10 +659,10 @@ TargaImage* TargaImage::Reverse_Rows(void)
 
         for (j = 0 ; j < _width ; j++)
         {
-	        dest[out_offset + j * 4] = data[in_offset + j * 4];
-	        dest[out_offset + j * 4 + 1] = data[in_offset + j * 4 + 1];
-	        dest[out_offset + j * 4 + 2] = data[in_offset + j * 4 + 2];
-	        dest[out_offset + j * 4 + 3] = data[in_offset + j * 4 + 3];
+            dest[out_offset + j * 4 + RED]   = data[in_offset + j * 4 + RED];
+            dest[out_offset + j * 4 + GREEN] = data[in_offset + j * 4 + GREEN];
+            dest[out_offset + j * 4 + BLUE]  = data[in_offset + j * 4 + BLUE];
+            dest[out_offset + j * 4 + ALPHA] = data[in_offset + j * 4 + ALPHA];
         }
     }
 
