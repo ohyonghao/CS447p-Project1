@@ -438,17 +438,19 @@ bool TargaImage::Difference(TargaImage* pImage)
     }// if
 
 
-    for (auto rgb1 = data.begin(), rgb2 = pImage->data.begin() ; rgb1 < data.end() ; rgb1 += 4, rgb2 +=4)
+    for (auto rgba1 = data.begin(), rgba2 = pImage->data.begin() ; rgba1 < data.end() ; rgba1 += 4, rgba2 +=4)
     {
         // Need to do the conversion on the fly for RGBA to RGB...
         // Need to split the function
-        //RGBA_To_RGB(data + i, rgb1);
-        //RGBA_To_RGB(pImage->data + i, rgb2);
+        vector<uchar> rgb1(3);
+        vector<uchar> rgb2(3);
+        RGBA_To_RGB(rgba1, rgb1.begin());
+        RGBA_To_RGB(rgba2, rgb2.begin());
 
-        *(rgb1 + RED)   = static_cast<uchar>(abs(*(rgb1 + RED  ) - *(rgb2 + RED   )));
-        *(rgb1 + GREEN) = static_cast<uchar>(abs(*(rgb1 + GREEN) - *(rgb2 + GREEN )));
-        *(rgb1 + BLUE)  = static_cast<uchar>(abs(*(rgb1 + BLUE ) - *(rgb2 + BLUE  )));
-        *(rgb1 + ALPHA) = 255;
+        *(rgba1 + RED)   = static_cast<uchar>(abs(rgb1[RED]   - rgba2[RED] ));
+        *(rgba1 + GREEN) = static_cast<uchar>(abs(rgb1[GREEN] - rgba2[GREEN] ));
+        *(rgba1 + BLUE)  = static_cast<uchar>(abs(rgb1[BLUE]  - rgba2[BLUE] ));
+        *(rgba1 + ALPHA) = 255;
     }
 
     return true;
