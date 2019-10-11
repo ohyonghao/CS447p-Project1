@@ -241,8 +241,24 @@ bool TargaImage::To_Grayscale()
 ///////////////////////////////////////////////////////////////////////////////
 bool TargaImage::Quant_Uniform()
 {
-    ClearToBlack();
-    return false;
+    // Should be a simple transform
+    int count{-1}; // used statically in transform
+
+    transform(data.begin(),data.end(),data.begin(),[&count](auto c){
+        ++count;
+        switch( count ){
+        case RED:
+        case GREEN:
+            return static_cast<uchar>(((c >> 5 ) << 5) + (1<<4));
+        case BLUE:
+            return static_cast<uchar>(((c >> 6 ) << 6) + (1<<5));
+        case ALPHA:
+            count = -1;
+            return c;
+        }
+
+    });
+    return true;
 }// Quant_Uniform
 
 
