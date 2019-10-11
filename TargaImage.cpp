@@ -507,9 +507,9 @@ bool TargaImage::Filter_Gaussian()
 
     const valarray<uint32_t> matrix= {
         1,  4,  6,  4, 1,
-        4, 16, 24, 26, 4,
+        4, 16, 24, 16, 4,
         6, 24, 36, 24, 6,
-        4, 16, 24, 26, 4,
+        4, 16, 24, 16, 4,
         1,  4,  6,  4, 1
     };
     // We'll use a uint32_t to store the result, then scale it down.
@@ -525,7 +525,7 @@ bool TargaImage::Filter_Gaussian()
             int xindex = 2;
             int yindex = -2;
             // Load the matrix
-            for( uint32_t k = 0; k < matrix.size(); ++k ){
+            for( size_t k = 0; k < matrix.size(); ++k ){
                 // We'll do it a slow way at first, then think about optimization
                 // The biggest roadblock to a good algorithm is optimizing too early
                 result[RED]  [k] = data[index(clamp(i+xindex, 0, _width-1 ), clamp(j+yindex, 0, _height-1) ) + RED];
@@ -541,7 +541,7 @@ bool TargaImage::Filter_Gaussian()
             } // k
             // hadamard
 
-            for( uint32_t i = 0; i < 3; ++i ){
+            for( size_t i = 0; i < 3; ++i ){
                 result[i] *= matrix;
             }
             // Now stuff it back in
@@ -679,20 +679,8 @@ void TargaImage::RGBA_To_RGB(decltype (data.cbegin()) in, decltype (data.begin()
     }
     else
     {
-        double	alpha_scale = 255.0 / alpha;
-
         for (int i = 0 ; i < 3 ; ++i)
-        {
-            int val = static_cast<int>(floor(*(in+i)) * alpha_scale);
-            if (val < 0)
-             *out = 0;
-            else if (val > 255)
-             *out = 255;
-            else
-             *out = static_cast<uchar>(val);
-
-            ++out;
-        }
+            *(out+i) = static_cast<uchar>(clamp( static_cast<int>(floor(*(in+i)) * 255.0 / alpha), 0, 255));
     }
 }// RGA_To_RGB
 
