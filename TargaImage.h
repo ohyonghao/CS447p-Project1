@@ -15,6 +15,7 @@
 #include <FL/Fl.H>
 #include <FL/Fl_Widget.H>
 #include <stdio.h>
+#include <vector>
 
 class Stroke;
 class DistanceImage;
@@ -24,12 +25,13 @@ class TargaImage
     // methods
     public:
 	    TargaImage(void);
-            TargaImage(int w, int h);
-	    TargaImage(int w, int h, unsigned char *d);
-            TargaImage(const TargaImage& image);
+        TargaImage(uint w, uint h);
+        TargaImage(uint w, uint h, unsigned char *d);
+        TargaImage(uint w, uint h, const std::vector<uchar>& d);
+        TargaImage(const TargaImage& image);
 	    ~TargaImage(void);
 
-        unsigned char*	To_RGB(void);	            // Convert the image to RGB format,
+        std::vector<uchar>	To_RGB(void);	            // Convert the image to RGB format,
         bool Save_Image(const char*);               // save the image to a file
         static TargaImage* Load_Image(char*);       // Load a file and return a pointer to a new TargaImage object.  Returns NULL on failure
 
@@ -69,8 +71,7 @@ class TargaImage
         bool Rotate(float angleDegrees);
 
     private:
-	// helper function for format conversion
-        void RGBA_To_RGB(unsigned char *rgba, unsigned char *rgb);
+
 
         // reverse the rows of the image, some targas are stored bottom to top
 	TargaImage* Reverse_Rows(void);
@@ -82,11 +83,18 @@ class TargaImage
         void Paint_Stroke(const Stroke& s);
 
     // members
-    public:
-        int		width;	    // width of the image in pixels
-        int		height;	    // height of the image in pixels
-        unsigned char	*data;	    // pixel data for the image, assumed to be in pre-multiplied RGBA format.
+    private:
+        uint		_width;	        // width of the image in pixels
+        uint		_height;	    // height of the image in pixels
+        std::vector<uchar>	data;	    // pixel data for the image, assumed to be in pre-multiplied RGBA format.
+        // helper function for format conversion
+            void RGBA_To_RGB(decltype (data.cbegin()) first,
+                                         decltype (data.cend()) last,
+                                         decltype (data.begin()) out);
 
+    public:
+            inline int width()const {return _width;}
+            inline int height()const {return _height;}
 };
 
 class Stroke { // Data structure for holding painterly strokes.

@@ -1,5 +1,5 @@
 TEMPLATE = app
-CONFIG += console c++11
+CONFIG += console c++17
 CONFIG -= app_bundle
 CONFIG -= qt
 CONFIG += x11
@@ -29,6 +29,7 @@ SOURCES += \
 
 HEADERS += \
     Globals.h \
+    ImageWidget.h \
     ScriptHandler.h \
     TargaImage.h \
     libtarga.h

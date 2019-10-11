@@ -9,11 +9,12 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef _IMAGE_WIDGET_H_
-#define _IMAGE_WIDGET_H_
+#ifndef IMAGE_WIDGET_H
+#define IMAGE_WIDGET_H
 
 #include <FL/Fl.H>
 #include <FL/Fl_Widget.H>
+#include <string>
 
 class Fl_Box;
 class Fl_Input;
@@ -23,7 +24,7 @@ class ImageWidget : public Fl_Widget
 {
     // methods
     public:
-	    ImageWidget(int, int, int, int, char*);
+        ImageWidget(int, int, int, int, const std::string&);
         ~ImageWidget();
 
 	    void draw();	                    // FLTK draw function draws the current image.

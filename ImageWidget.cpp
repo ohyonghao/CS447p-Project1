@@ -18,10 +18,11 @@
 #include <FL/Fl_Box.H>
 #include <FL/fl_draw.H>
 #include "libtarga.h"
-#include <string.h>
+#include <string>
 #include "TargaImage.h"
 #include "ScriptHandler.h"
 
+using namespace std;
 // constants
 const int   c_border                = 10;                                       // border width between window elements in pixels
 const int   c_buttonHeight          = 30;                                       // button height in pixels
@@ -37,7 +38,9 @@ const int   c_minWindowHeight       = 100;                                      
 //      Constructor.  Add the buttons to the window.
 //
 ///////////////////////////////////////////////////////////////////////////////
-ImageWidget::ImageWidget(int x, int y, int w, int h, char *title) : Fl_Widget(x, y, Max(w, c_minWindowWidth), Max(h, c_minWindowHeight), title), m_pImage(NULL)
+ImageWidget::ImageWidget(int x, int y, int w, int h, const string &title) :
+    Fl_Widget(x, y, Max(w, c_minWindowWidth), Max(h, c_minWindowHeight), title.data()),
+    m_pImage(nullptr)
 {
     // add controls-
     int horizontalCenter = Max(w, c_minWindowWidth) / 2;
@@ -86,11 +89,9 @@ void ImageWidget::draw()
     if (!m_pImage)          // Don't do anything if the image is empty.
     	return;
     
-    unsigned char   *rgb;
-    rgb = m_pImage->To_RGB(); // Convert the pre-multiplied RGBA image into RGB.
-    unsigned int imageX = x() + (w() > m_pImage->width) ? (w() - m_pImage->width) / 2 : 0;
-    fl_draw_image(rgb, imageX, y() + c_border * 2 + c_buttonHeight, m_pImage->width, m_pImage->height, 3);
-    delete[] rgb;
+    vector<uchar> rgb = m_pImage->To_RGB(); // Convert the pre-multiplied RGBA image into RGB.
+    unsigned int imageX = x() + (w() > m_pImage->width()) ? (w() - m_pImage->width()) / 2 : 0;
+    fl_draw_image(rgb.data(), imageX, y() + c_border * 2 + c_buttonHeight, m_pImage->width(), m_pImage->height(), 3);
 }// draw
 
 
@@ -102,7 +103,7 @@ void ImageWidget::draw()
 void ImageWidget::Redraw()
 {
     if (m_pImage)
-        parent()->size(Max(m_pImage->width, c_minWindowWidth), Max(m_pImage->height + c_buttonPaneHeight, c_minWindowHeight));
+        parent()->size(Max(m_pImage->width(), c_minWindowWidth), Max(m_pImage->height() + c_buttonPaneHeight, c_minWindowHeight));
     else
         parent()->size(c_minWindowWidth, c_minWindowHeight);
 

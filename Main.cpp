@@ -64,7 +64,7 @@ void DisplayNames()
 //      Argument processing callback. Does nothing at this point.
 //
 ///////////////////////////////////////////////////////////////////////////////
-static int Arg_Callback(int argc, char *argv[], int &i)
+static int Arg_Callback(int /*argc*/, char **/*argv[]*/, int &/*i*/)
 {
     return 0;
 }// Arg_Callback
