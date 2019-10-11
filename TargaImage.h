@@ -73,8 +73,8 @@ class TargaImage
     private:
 
 
-        // reverse the rows of the image, some targas are stored bottom to top
-	TargaImage* Reverse_Rows(void);
+    // reverse the rows of the image, some targas are stored bottom to top
+    TargaImage* Reverse_Rows(void);
 
 	// clear image to all black
         void ClearToBlack();
@@ -89,6 +89,7 @@ class TargaImage
         std::vector<uchar>	data;	    // pixel data for the image, assumed to be in pre-multiplied RGBA format.
         // helper function for format conversion
         void RGBA_To_RGB(decltype (data.cbegin()) in, decltype (data.begin()) out);
+        inline size_t index( uint w, uint h){ return (h*_width + w)*4 ;}
 
     public:
             inline int width()const {return _width;}
