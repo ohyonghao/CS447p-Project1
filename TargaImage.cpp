@@ -619,11 +619,10 @@ void TargaImage::RGBA_To_RGB(decltype (data.cbegin()) in, decltype (data.begin()
     else
     {
         double	alpha_scale = 255.0 / alpha;
-        int	val;
 
         for (int i = 0 ; i < 3 ; ++i)
         {
-            val = static_cast<int>(floor(*in) * alpha_scale);
+            int val = static_cast<int>(floor(*(in+i)) * alpha_scale);
             if (val < 0)
              *out = 0;
             else if (val > 255)
@@ -645,19 +644,17 @@ void TargaImage::RGBA_To_RGB(decltype (data.cbegin()) in, decltype (data.begin()
 ///////////////////////////////////////////////////////////////////////////////
 TargaImage* TargaImage::Reverse_Rows(void)
 {
-    vector<uchar>   dest(_width * _height * 4);
-    TargaImage	    *result;
-    int 	        i, j;
+    vector<uchar>   dest(data.size());
 
     if (data.empty())
         return nullptr;
 
-    for (i = 0 ; i < _height ; i++)
+    for (int i = 0 ; i < _height ; i++)
     {
         int in_offset = (_height - i - 1) * _width * 4;
         int out_offset = i * _width * 4;
 
-        for (j = 0 ; j < _width ; j++)
+        for (int j = 0 ; j < _width ; j++)
         {
             dest[out_offset + j * 4 + RED]   = data[in_offset + j * 4 + RED];
             dest[out_offset + j * 4 + GREEN] = data[in_offset + j * 4 + GREEN];
@@ -666,9 +663,7 @@ TargaImage* TargaImage::Reverse_Rows(void)
         }
     }
 
-    result = new TargaImage(_width, _height, dest);
-
-    return result;
+    return new TargaImage(_width, _height, dest);
 }// Reverse_Rows
 
 
