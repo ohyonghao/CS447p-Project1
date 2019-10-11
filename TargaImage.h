@@ -54,7 +54,8 @@ class TargaImage
         bool Comp_Atop(TargaImage* pImage);
         bool Comp_Xor(TargaImage* pImage);
 
-        bool Difference(TargaImage* pImage);
+        bool Difference(const TargaImage& pImage);
+        bool Difference(const std::vector<uchar> remove );
 
         bool Filter_Box();
         bool Filter_Bartlett();

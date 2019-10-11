@@ -392,7 +392,7 @@ bool CScriptHandler::HandleCommand(const char* sCommand, TargaImage*& pImage)
 
                 bParsed = false;
             }// if
-            bResult = pNewImage && pImage->Difference(pNewImage);
+            bResult = pNewImage && pImage->Difference(*pNewImage);
             delete pNewImage;
             break;
         }// DIFF
