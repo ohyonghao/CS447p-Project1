@@ -128,8 +128,8 @@ bool CScriptHandler::HandleCommand(const char* sCommand, TargaImage*& pImage)
         {
             if (pImage)
                 delete pImage;
-            char* sFilename = strtok(NULL, c_sWhiteSpace);
-            bResult = (pImage = TargaImage::Load_Image(sFilename)) != NULL;
+            char* sFilename = strtok(nullptr, c_sWhiteSpace);
+            bResult = (pImage = TargaImage::Load_Image(sFilename)) != nullptr;
 
             if (!bResult)
             {
@@ -145,18 +145,18 @@ bool CScriptHandler::HandleCommand(const char* sCommand, TargaImage*& pImage)
 
         case SAVE:
         {
-            char* sFilename = strtok(NULL, c_sWhiteSpace);
+            char* sFilename = strtok(nullptr, c_sWhiteSpace);
             if (!sFilename)
                 cout << "No filename given." << endl;
 
-            bParsed = sFilename != NULL;
+            bParsed = sFilename != nullptr;
             bResult =  bParsed && pImage->Save_Image(sFilename);
             break;
         }// SAVE
 
         case RUN:
         {
-            bResult = HandleScriptFile(strtok(NULL, c_sWhiteSpace), pImage);
+            bResult = HandleScriptFile(strtok(nullptr, c_sWhiteSpace), pImage);
             break;
         }// RUN
 
@@ -234,7 +234,7 @@ bool CScriptHandler::HandleCommand(const char* sCommand, TargaImage*& pImage)
 
         case FILTER_GAUSS_N:
         {
-            char *sN = strtok(NULL, c_sWhiteSpace);
+            char *sN = strtok(nullptr, c_sWhiteSpace);
             int N = atoi(sN);
             if (N % 2 != 1) {
                cout << "N \"" << N << "\" is not allowed; N must be an odd number." << endl;
@@ -277,10 +277,10 @@ bool CScriptHandler::HandleCommand(const char* sCommand, TargaImage*& pImage)
 
         case SCALE:
         {
-            char *sScale = strtok(NULL, c_sWhiteSpace);
-            float scale;
+            char *sScale = strtok(nullptr, c_sWhiteSpace);
+            double scale = atof(sScale);
 
-            if (!sScale || !(scale = (float)atof(sScale)) || scale <= 0)
+            if(scale <= 0)
             {
                 cout << "Invalid scaling factor." << endl;
                 bParsed = bResult = false;
@@ -292,7 +292,7 @@ bool CScriptHandler::HandleCommand(const char* sCommand, TargaImage*& pImage)
 
         case COMP_OVER:
         {
-            char* sFilename = strtok(NULL, c_sWhiteSpace);
+            char* sFilename = strtok(nullptr, c_sWhiteSpace);
             TargaImage* pNewImage = TargaImage::Load_Image(sFilename);
             if (!pNewImage)
             {
@@ -309,7 +309,7 @@ bool CScriptHandler::HandleCommand(const char* sCommand, TargaImage*& pImage)
 
         case COMP_IN:
         {
-            char* sFilename = strtok(NULL, c_sWhiteSpace);
+            char* sFilename = strtok(nullptr, c_sWhiteSpace);
             TargaImage* pNewImage = TargaImage::Load_Image(sFilename);
             if (!pNewImage)
             {
@@ -327,7 +327,7 @@ bool CScriptHandler::HandleCommand(const char* sCommand, TargaImage*& pImage)
 
         case COMP_OUT:
         {
-            char* sFilename = strtok(NULL, c_sWhiteSpace);
+            char* sFilename = strtok(nullptr, c_sWhiteSpace);
             TargaImage* pNewImage = TargaImage::Load_Image(sFilename);
             if (!pNewImage)
             {
@@ -345,7 +345,7 @@ bool CScriptHandler::HandleCommand(const char* sCommand, TargaImage*& pImage)
 
         case COMP_ATOP:
         {
-            char* sFilename = strtok(NULL, c_sWhiteSpace);
+            char* sFilename = strtok(nullptr, c_sWhiteSpace);
             TargaImage* pNewImage = TargaImage::Load_Image(sFilename);
             if (!pNewImage)
             {
@@ -363,7 +363,7 @@ bool CScriptHandler::HandleCommand(const char* sCommand, TargaImage*& pImage)
 
         case COMP_XOR:
         {
-            char* sFilename = strtok(NULL, c_sWhiteSpace);
+            char* sFilename = strtok(nullptr, c_sWhiteSpace);
             TargaImage* pNewImage = TargaImage::Load_Image(sFilename);
             if (!pNewImage)
             {
@@ -381,7 +381,7 @@ bool CScriptHandler::HandleCommand(const char* sCommand, TargaImage*& pImage)
 
         case DIFF:
         {
-            char* sFilename = strtok(NULL, c_sWhiteSpace);
+            char* sFilename = strtok(nullptr, c_sWhiteSpace);
             TargaImage* pNewImage = TargaImage::Load_Image(sFilename);
             if (!pNewImage)
             {
@@ -399,7 +399,7 @@ bool CScriptHandler::HandleCommand(const char* sCommand, TargaImage*& pImage)
 
         case ROTATE:
         {
-            char *sAngle = strtok(NULL, c_sWhiteSpace);
+            char *sAngle = strtok(nullptr, c_sWhiteSpace);
             float angle;
 
             if (!sAngle || !(angle = (float)atof(sAngle)))

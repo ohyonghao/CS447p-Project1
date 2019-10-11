@@ -10,8 +10,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 
-#ifndef _C_SCRIPT_HANDLER
-#define _C_SCRIPT_HANDLER
+#ifndef C_SCRIPT_HANDLER
+#define C_SCRIPT_HANDLER
 
 class TargaImage;
 

@@ -90,7 +90,12 @@ void ImageWidget::draw()
     	return;
     
     vector<uchar> rgb = m_pImage->To_RGB(); // Convert the pre-multiplied RGBA image into RGB.
-    unsigned int imageX = x() + (w() > m_pImage->width()) ? (w() - m_pImage->width()) / 2 : 0;
+    int _x = x();
+    int _w = w();
+    unsigned int imageX = x() + (w() > m_pImage->width() ? ((w() - m_pImage->width()) / 2) : 0);
+    //unsigned int imageX = x() + (w() > m_pImage->width()) ? (w() - m_pImage->width()) / 2 : 0;
+    //unsigned int imageX = x() + (w() > m_pImage->width) ? (w() - m_pImage->width) / 2 : 0;
+
     fl_draw_image(rgb.data(), imageX, y() + c_border * 2 + c_buttonHeight, m_pImage->width(), m_pImage->height(), 3);
 }// draw
 

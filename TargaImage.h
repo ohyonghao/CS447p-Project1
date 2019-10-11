@@ -9,8 +9,8 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef _TARGA_IMAGE_H_
-#define _TARGA_IMAGE_H_
+#ifndef TARGA_IMAGE_H_
+#define TARGA_IMAGE_H_
 
 #include <FL/Fl.H>
 #include <FL/Fl_Widget.H>
@@ -84,13 +84,11 @@ class TargaImage
 
     // members
     private:
-        uint		_width;	        // width of the image in pixels
-        uint		_height;	    // height of the image in pixels
+        int		_width;	        // width of the image in pixels
+        int		_height;	    // height of the image in pixels
         std::vector<uchar>	data;	    // pixel data for the image, assumed to be in pre-multiplied RGBA format.
         // helper function for format conversion
-            void RGBA_To_RGB(decltype (data.cbegin()) first,
-                                         decltype (data.cend()) last,
-                                         decltype (data.begin()) out);
+        void RGBA_To_RGB(decltype (data.cbegin()) in, decltype (data.begin()) out);
 
     public:
             inline int width()const {return _width;}

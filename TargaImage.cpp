@@ -138,7 +138,11 @@ vector<uchar> TargaImage::To_RGB(void)
     if (data.empty())
         return rgb;
 
-    RGBA_To_RGB(data.begin(), data.end(), rgb.begin() );
+    auto it = data.cbegin();
+    auto ot = rgb.begin();
+    for( ; it < data.cend(); ++it, ++ot ){
+        RGBA_To_RGB( it, ot );
+    }
 
     return rgb;
 }// TargaImage
@@ -158,7 +162,7 @@ bool TargaImage::Save_Image(const char *filename)
 
     if (!tga_write_raw(filename, _width, _height, out_image->data.data(), TGA_TRUECOLOR_32))
     {
-	    cout << "TGA Save Error: %s\n", tga_error_string(tga_get_last_error());
+        cout << "TGA Save Error: " <<  tga_error_string(tga_get_last_error()) << endl;
 	    return false;
     }
 
@@ -190,7 +194,7 @@ TargaImage* TargaImage::Load_Image(char *filename)
     temp_data = (unsigned char*)tga_load(filename, &width, &height, TGA_TRUECOLOR_32);
     if (!temp_data)
     {
-        cout << "TGA Error: %s\n", tga_error_string(tga_get_last_error());
+        cout << "TGA Error: " << tga_error_string(tga_get_last_error()) << endl;
 	    width = height = 0;
         return nullptr;
     }
@@ -433,18 +437,18 @@ bool TargaImage::Difference(TargaImage* pImage)
         return false;
     }// if
 
-    for (int i = 0 ; i < _width * _height * 4 ; i += 4)
-    {
-        unsigned char        rgb1[3];
-        unsigned char        rgb2[3];
 
+    for (auto rgb1 = data.begin(), rgb2 = pImage->data.begin() ; rgb1 < data.end() ; rgb1 += 4, rgb2 +=4)
+    {
+        // Need to do the conversion on the fly for RGBA to RGB...
+        // Need to split the function
         //RGBA_To_RGB(data + i, rgb1);
         //RGBA_To_RGB(pImage->data + i, rgb2);
 
-        data[i] = abs(rgb1[0] - rgb2[0]);
-        data[i+1] = abs(rgb1[1] - rgb2[1]);
-        data[i+2] = abs(rgb1[2] - rgb2[2]);
-        data[i+3] = 255;
+        *(rgb1 + RED)   = static_cast<uchar>(abs(*(rgb1 + RED  ) - *(rgb2 + RED   )));
+        *(rgb1 + GREEN) = static_cast<uchar>(abs(*(rgb1 + GREEN) - *(rgb2 + GREEN )));
+        *(rgb1 + BLUE)  = static_cast<uchar>(abs(*(rgb1 + BLUE ) - *(rgb2 + BLUE  )));
+        *(rgb1 + ALPHA) = 255;
     }
 
     return true;
@@ -601,39 +605,31 @@ bool TargaImage::Rotate(float angleDegrees)
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-void TargaImage::RGBA_To_RGB(decltype (data.cbegin()) first,
-                             decltype (data.cend()) last,
-                             decltype (data.begin()) out){
+void TargaImage::RGBA_To_RGB(decltype (data.cbegin()) in, decltype (data.begin()) out){
+    auto alpha = *(in + ALPHA);
 
-    while( first < last ){
-        auto alpha = *(first + ALPHA);
+    if (alpha == 0)
+    {
+        *(out + RED)   = BACKGROUND[RED];
+        *(out + GREEN) = BACKGROUND[GREEN];
+        *(out + BLUE)  = BACKGROUND[BLUE];
+    }
+    else
+    {
+        double	alpha_scale = 255.0 / alpha;
+        int	val;
 
-        if (alpha == 0)
+        for (uint i = 0 ; i < 3 ; ++i)
         {
-            *(out + RED)   = BACKGROUND[RED];
-            *(out + GREEN) = BACKGROUND[GREEN];
-            *(out + BLUE)  = BACKGROUND[BLUE];
-            out += 3;
-            first +=3;
-        }
-        else
-        {
-            double	alpha_scale = 255.0 / alpha;
-            int	val;
+            val = static_cast<int>(floor(*in) * alpha_scale);
+            if (val < 0)
+             *out = 0;
+            else if (val > 255)
+             *out = 255;
+            else
+             *out = static_cast<uchar>(val);
 
-            for (uint i = 0 ; i < 3 ; ++i)
-            {
-                val = static_cast<int>(floor(*first) * alpha_scale);
-                if (val < 0)
-                 *out = 0;
-                else if (val > 255)
-                 *out = 255;
-                else
-                 *out = static_cast<uchar>(val);
-
-                ++first;
-                ++out;
-            }
+            ++out;
         }
     }
 }// RGA_To_RGB
