@@ -35,11 +35,10 @@ const unsigned char BACKGROUND[3]   = { 0, 0, 0 };          // background color
 
 
 // Computes n choose s, efficiently
-double Binomial(int n, int s)
+constexpr double Binomial(int n, int s)
 {
-    double        res;
+    double        res{1};
 
-    res = 1;
     for (int i = 1 ; i <= s ; i++)
         res = (n - i + 1) * res / i ;
 
@@ -222,9 +221,10 @@ bool TargaImage::To_Grayscale()
 {
     for( auto it = data.begin(); it < data.end(); it+=4){
         this->RGBA_To_RGB(it, it); // overwriting itself
-        uchar y = *(it+RED)   * 0.299
+        uchar y = static_cast<uchar>(
+                  *(it+RED)   * 0.299
                 + *(it+GREEN) * 0.587
-                + *(it+BLUE)  * 0.114;
+                + *(it+BLUE)  * 0.114);
         *(it+RED)   = y;
         *(it+GREEN) = y;
         *(it+BLUE)  = y;
@@ -242,6 +242,8 @@ bool TargaImage::To_Grayscale()
 bool TargaImage::Quant_Uniform()
 {
     // Should be a simple transform
+    // starting at -1 is so we can increment first and it makes the
+    // switch easy
     int count{-1}; // used statically in transform
 
     transform(data.begin(),data.end(),data.begin(),[&count](auto c){
