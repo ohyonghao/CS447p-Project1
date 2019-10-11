@@ -143,6 +143,7 @@ vector<uchar> TargaImage::To_RGB()
     for( ; it < data.cend(); it+=4, ot+=3 ){
         RGBA_To_RGB( it, ot );
     }
+    cout << endl;
 
     return rgb;
 }// TargaImage
@@ -218,8 +219,16 @@ TargaImage* TargaImage::Load_Image(char *filename)
 ///////////////////////////////////////////////////////////////////////////////
 bool TargaImage::To_Grayscale()
 {
-    ClearToBlack();
-    return false;
+    for( auto it = data.begin(); it < data.end(); it+=4){
+        this->RGBA_To_RGB(it, it);
+        uchar   y = *(it+RED)*0.299
+                  + *(it+GREEN)*0.587
+                  + *(it+BLUE)*0.114;
+        *(it+RED) = y;
+        *(it+GREEN) = y;
+        *(it+BLUE) = y;
+    }
+    return true;
 }// To_Grayscale
 
 
