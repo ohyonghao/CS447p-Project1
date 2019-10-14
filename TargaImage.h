@@ -56,7 +56,7 @@ class TargaImage
         bool Comp_Xor(TargaImage* pImage);
 
         bool Difference(const TargaImage& pImage);
-        bool Difference(const std::vector<uchar> remove );
+        bool Difference(const std::vector<uchar> &remove );
 
         bool Filter_Box();
         bool Filter_Bartlett();
@@ -91,7 +91,8 @@ class TargaImage
         std::vector<uchar>	data;	    // pixel data for the image, assumed to be in pre-multiplied RGBA format.
         // helper function for format conversion
         void RGBA_To_RGB(decltype (data.cbegin()) in, decltype (data.begin()) out);
-        inline size_t index( uint w, uint h){ return (h*_width + w)*4 ;}
+        template<class T>
+        inline size_t index( T w, T h){ return (h*static_cast<T>(_width) + w)*4 ;}
 
     public:
             inline int width()const {return _width;}

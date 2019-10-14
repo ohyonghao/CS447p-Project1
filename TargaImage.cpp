@@ -244,6 +244,8 @@ bool TargaImage::Quant_Uniform()
     // Should be a simple transform
     // starting at -1 is so we can increment first and it makes the
     // switch easy
+
+    // Clear the n bits, then move it to the midpoint of each bucket
     int count{-1}; // used statically in transform
 
     transform(data.begin(),data.end(),data.begin(),[&count](auto c){
@@ -465,7 +467,7 @@ bool TargaImage::Difference(const TargaImage& pImage)
 
     return Difference(pImage.data);
 }
-bool TargaImage::Difference(const vector<uchar> remove )
+bool TargaImage::Difference(const vector<uchar>& remove )
 {
     auto rgba1 = data.begin();
     auto rgba2 = remove.begin();
@@ -538,9 +540,9 @@ bool TargaImage::Filter_Box()
                 result[i] *= matrix;
             }
             // Now stuff it back in
-            box[ index(i,j) + RED ]   = clamp( ((result[RED]  .sum()) / 9 ), 0u, 255u) ;
-            box[ index(i,j) + GREEN ] = clamp( ((result[GREEN].sum()) / 9 ), 0u, 255u) ;
-            box[ index(i,j) + BLUE ]  = clamp( ((result[BLUE] .sum()) / 9 ), 0u, 255u) ;
+            box[ index(i,j) + RED ]   = static_cast<uchar>(clamp( ((result[RED]  .sum()) / 9 ), 0u, 255u));
+            box[ index(i,j) + GREEN ] = static_cast<uchar>(clamp( ((result[GREEN].sum()) / 9 ), 0u, 255u));
+            box[ index(i,j) + BLUE ]  = static_cast<uchar>(clamp( ((result[BLUE] .sum()) / 9 ), 0u, 255u));
             // Update indexes
         } // j
     } // i
@@ -686,8 +688,69 @@ bool TargaImage::Filter_Gaussian()
 
 bool TargaImage::Filter_Gaussian_N( unsigned int /*N*/ )
 {
-    ClearToBlack();
-   return false;
+    auto gauss{data};
+
+    // We'll load a vector flattened with the gaussian blurr, and then pull from our original image
+    // while pushing to our copy.
+
+    // The hardest part will be coming up with an approprietly sized matrix filled with binomial values,
+    // but everything else here is easily generalized
+
+    // An easy way to work this is to say that each element is equal to its (row_0, col_cur) * (row_cur, col_0).
+    // Then we can use binomial to get the first half of the first row, duplicate it across
+    // Then copy that down the column
+
+    const valarray<uint32_t> matrix= {
+        1,  4,  6,  4, 1,
+        4, 16, 24, 16, 4,
+        6, 24, 36, 24, 6,
+        4, 16, 24, 16, 4,
+        1,  4,  6,  4, 1
+    };
+
+    // We'll use a uint32_t to store the result, then scale it down.
+    // We'll have 8bit, multiplied by most a 6bit, needing 14bits, then added together with the most 25 times, so another 5 bits, making
+    // a total of 19bits needed. A 32bit int can hold the entire summation, and arguabbly a 16bit int is all we need for the matrix
+    // itself
+    valarray<uint32_t> result[3];
+    for( auto& v: result ){
+        v.resize(matrix.size());
+    }
+    int dim = static_cast<int>(sqrt(matrix.size())/2);
+    for( int j = 0; j < _height; ++j ){
+        for( int i = 0; i < _width; ++i ){
+            int xindex = dim;
+            int yindex = -dim;
+            // Load the matrix
+            for( size_t k = 0; k < matrix.size(); ++k ){
+                // We'll do it a slow way at first, then think about optimization
+                // The biggest roadblock to a good algorithm is optimizing too early
+                result[RED]  [k] = data[index(clamp(i+xindex, 0, _width-1 ), clamp(j+yindex, 0, _height-1) ) + RED];
+                result[GREEN][k] = data[index(clamp(i+xindex, 0, _width-1 ), clamp(j+yindex, 0, _height-1) ) + GREEN];
+                result[BLUE] [k] = data[index(clamp(i+xindex, 0, _width-1 ), clamp(j+yindex, 0, _height-1) ) + BLUE];
+                // Update indexes
+                if( yindex == dim ){
+                    --xindex;
+                    yindex = -dim;
+                }else{
+                    ++yindex;
+                }
+            } // k
+            // hadamard
+
+            for( size_t i = 0; i < 3; ++i ){
+                result[i] *= matrix;
+            }
+            // Now stuff it back in
+            gauss[ index(i,j) + RED ]   = clamp( ((result[RED]  .sum()) >> 8 ), 0u, 255u) ;
+            gauss[ index(i,j) + GREEN ] = clamp( ((result[GREEN].sum()) >> 8 ), 0u, 255u) ;
+            gauss[ index(i,j) + BLUE ]  = clamp( ((result[BLUE] .sum()) >> 8 ), 0u, 255u) ;
+            // Update indexes
+        } // j
+    } // i
+
+    swap(data,gauss);
+    return true;
 }// Filter_Gaussian_N
 
 
