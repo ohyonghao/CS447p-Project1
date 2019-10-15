@@ -363,15 +363,23 @@ bool TargaImage::Dither_FS()
 ///////////////////////////////////////////////////////////////////////////////
 bool TargaImage::Dither_Bright()
 {
+    // If the image is so large we can't hold its sum in a uint64_t
+    if( numeric_limits<uint64_t>::max()/(static_cast<uint>(_width)*8) < static_cast<uint>(_height) ){
+        cout << "Error: Image too large for uint64_t" << endl;
+        return false;
+    }
     // No need to convert to float first, we'll calculate the average
     this->To_Grayscale();
-    uint intensity{0};
-    vector<size_t> count_sort(256); // initialized to 0
+
+    // 32bit only allows for 4000x4000 image, 2^63 should be enough
+    // as this allows for 3e9 square images.
+    uint64_t intensity{0};
+    vector<uint64_t> count_sort(256); // initialized to 0
     for( auto it = data.begin(); it < data.end(); it+=4){
         count_sort[*it]++;
         intensity += *it;
     }
-    int intensity_index = intensity >> 8;
+    int64_t intensity_index = intensity >> 8;
 
     // Count down the threshold as these are the values that
     // determine brightness
