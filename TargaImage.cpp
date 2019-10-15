@@ -286,8 +286,15 @@ bool TargaImage::Quant_Populosity()
 ///////////////////////////////////////////////////////////////////////////////
 bool TargaImage::Dither_Threshold()
 {
-    ClearToBlack();
-    return false;
+    // No need to convert to float first, as we can calculate the
+    // midpoint as 256/2 = 128.
+    this->To_Grayscale();
+
+    // Calculate average intensity
+    transform(data.begin(), data.end(), data.begin(), [](auto c){
+        return (c<128) ? 0 : 255;
+    });
+    return true;
 }// Dither_Threshold
 
 
