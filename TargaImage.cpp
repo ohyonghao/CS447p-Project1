@@ -363,8 +363,30 @@ bool TargaImage::Dither_FS()
 ///////////////////////////////////////////////////////////////////////////////
 bool TargaImage::Dither_Bright()
 {
-    ClearToBlack();
-    return false;
+    // No need to convert to float first, we'll calculate the average
+    this->To_Grayscale();
+    uint intensity{0};
+    vector<size_t> count_sort(256); // initialized to 0
+    for( auto it = data.begin(); it < data.end(); it+=4){
+        count_sort[*it]++;
+        intensity += *it;
+    }
+    int intensity_index = intensity >> 8;
+
+    // Count down the threshold as these are the values that
+    // determine brightness
+    uchar threshold{255};
+
+    for(; intensity_index > 0; --threshold){
+        intensity_index -= count_sort[threshold];
+    }
+    // We overshoot by 1 each time
+    ++threshold;
+
+    transform_n_less_m<4,1>(data.begin(), data.end(), data.begin(), [threshold](auto c)->uchar{
+        return (c<threshold) ? 0 : 255;
+    });
+    return true;
 }// Dither_Bright
 
 
