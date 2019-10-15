@@ -46,6 +46,16 @@ constexpr double Binomial(int n, int s)
     return res;
 }// Binomial
 
+template< int N, int M, typename IN, typename OUT, typename UNOP>
+void transform_n_less_m(IN first, IN last, OUT result, UNOP op){
+    while( first != last ){
+        *result = op(*first);
+        for( auto i = 1; i < N - M; ++i){
+            *(result+i) = *result;
+        }
+        result+=N; first+=N;
+    }
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 //
