@@ -300,7 +300,7 @@ bool TargaImage::Dither_Threshold()
     // No need to convert to float first, as we can calculate the
     // midpoint as 256/2 = 128.
     this->To_Grayscale();
-    transform(data.begin(), data.end(), data.begin(), [](auto c){
+    transform_n_less_m<4,1>(data.begin(), data.end(), data.begin(), [](auto c)->uchar{
         return (c<128) ? 0 : 255;
     });
     return true;
@@ -322,24 +322,22 @@ bool TargaImage::Dither_Random()
     // We want to add a random amount from [-a,a], then apply the threshold
     // algorithm to it.
     this->To_Grayscale();
-    constexpr char a = 20;
+    constexpr char a = 51; // An artistic value - should be close to [-0.2,0.2]
     default_random_engine generator;
     uniform_int_distribution<char> distribution(-a,a);
     auto randint = bind(distribution,generator );
 
-    for(auto it = data.begin(); it < data.end(); it+=4 ){
+    transform_n_less_m<4,1>(data.begin(), data.end(), data.begin(), [&randint](auto c)->uchar{
         // First we check if the noise will bring us outside the range
         // of the char to protect against overflow.
         auto noise = randint();
         if( noise < 0 ){
-            *it = (*it < -noise) ? 0 : *it + static_cast<uchar>(-noise);
+            c = (c < -noise) ? 0 : c + static_cast<uchar>(-noise);
         }else{
-            *it = (255 - noise < *it) ? 255 : *it + static_cast<uchar>(noise);
+            c = (255 - noise < c) ? 255 : c + static_cast<uchar>(noise);
         }
-        *(it + RED)   = (*it < 128) ? 0 : 255;
-        *(it + GREEN) = *(it + RED);
-        *(it + BLUE)  = *(it + RED);
-    }
+        return (c < 128) ? 0 : 255;
+    });
     return true;
 }// Dither_Random
 
