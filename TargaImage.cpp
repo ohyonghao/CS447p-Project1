@@ -23,6 +23,7 @@
 #include <vector>
 #include <algorithm>
 #include <valarray>
+#include <random>
 
 using namespace std;
 
@@ -289,8 +290,6 @@ bool TargaImage::Dither_Threshold()
     // No need to convert to float first, as we can calculate the
     // midpoint as 256/2 = 128.
     this->To_Grayscale();
-
-    // Calculate average intensity
     transform(data.begin(), data.end(), data.begin(), [](auto c){
         return (c<128) ? 0 : 255;
     });
@@ -305,8 +304,33 @@ bool TargaImage::Dither_Threshold()
 ///////////////////////////////////////////////////////////////////////////////
 bool TargaImage::Dither_Random()
 {
-    ClearToBlack();
-    return false;
+    // Still pointless to convert to float, we can choose a random value
+    // from the range of 0-255 since a conversion to float and back to
+    // uchar will be the same as not having converted in the first place.
+
+    // Think about this a little more, what is the algoritm trying to do?
+    // We want to add a random amount from [-a,a], then apply the threshold
+    // algorithm to it.
+    this->To_Grayscale();
+    constexpr char a = 20;
+    default_random_engine generator;
+    uniform_int_distribution<char> distribution(-a,a);
+    auto randint = bind(distribution,generator );
+
+    for(auto it = data.begin(); it < data.end(); it+=4 ){
+        // First we check if the noise will bring us outside the range
+        // of the char to protect against overflow.
+        auto noise = randint();
+        if( noise < 0 ){
+            *it = (*it < -noise) ? 0 : *it + static_cast<uchar>(-noise);
+        }else{
+            *it = (255 - noise < *it) ? 255 : *it + static_cast<uchar>(noise);
+        }
+        *(it + RED)   = (*it < 128) ? 0 : 255;
+        *(it + GREEN) = *(it + RED);
+        *(it + BLUE)  = *(it + RED);
+    }
+    return true;
 }// Dither_Random
 
 
