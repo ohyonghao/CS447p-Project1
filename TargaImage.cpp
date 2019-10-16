@@ -686,6 +686,12 @@ bool TargaImage::Difference(const TargaImage& pImage)
 }
 bool TargaImage::Difference(const vector<uchar>& remove )
 {
+    // Can only check if same number of pixels, can't stop
+    // all the stupid.
+    if( data.size() != remove.size() ){
+        cout << "Difference: Images not the same size\n";
+        return false;
+    }
     auto rgba1 = data.begin();
     auto rgba2 = remove.begin();
     for ( ; rgba1 < data.end() ; rgba1 += 4, rgba2 +=4)
