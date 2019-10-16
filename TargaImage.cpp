@@ -588,9 +588,9 @@ bool TargaImage::Difference(const vector<uchar>& remove )
         RGBA_To_RGB(rgba1, rgb1.begin());
         RGBA_To_RGB(rgba2, rgb2.begin());
 
-        *(rgba1 + RED)   = static_cast<uchar>(abs(rgb1[RED]   - rgba2[RED] ));
-        *(rgba1 + GREEN) = static_cast<uchar>(abs(rgb1[GREEN] - rgba2[GREEN] ));
-        *(rgba1 + BLUE)  = static_cast<uchar>(abs(rgb1[BLUE]  - rgba2[BLUE] ));
+        *(rgba1 + RED)   = static_cast<uchar>(abs(rgb1[RED]   - rgb2[RED] ));
+        *(rgba1 + GREEN) = static_cast<uchar>(abs(rgb1[GREEN] - rgb2[GREEN] ));
+        *(rgba1 + BLUE)  = static_cast<uchar>(abs(rgb1[BLUE]  - rgb2[BLUE] ));
         *(rgba1 + ALPHA) = 255;
     }
 
