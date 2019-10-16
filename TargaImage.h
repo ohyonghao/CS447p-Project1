@@ -17,12 +17,23 @@
 #include <stdio.h>
 #include <vector>
 #include <string>
+#include <functional>
+#include <cmath>
 
 class Stroke;
 class DistanceImage;
 
 class TargaImage
 {
+
+    // constants
+    static constexpr int           RED             = 0;                // red channel
+    static constexpr int           GREEN           = 1;                // green channel
+    static constexpr int           BLUE            = 2;                // blue channel
+    static constexpr int           ALPHA           = 3;                // alpha channel
+    static constexpr unsigned char BACKGROUND[3]   = { 0, 0, 0 };          // background color
+
+
     // methods
     public:
 	    TargaImage(void);
@@ -58,6 +69,8 @@ class TargaImage
         bool Difference(const TargaImage& pImage);
         bool Difference(const std::vector<uchar> &remove );
 
+        template <typename T, typename S>
+        bool Apply_Mask(const std::valarray<T>&, std::function<S(S)>);
         bool Filter_Box();
         bool Filter_Bartlett();
         bool Filter_Gaussian();
@@ -110,7 +123,57 @@ public:
    unsigned char r, g, b, a;	// Color
 };
 
+///////////////////////////////////////////////////////////////////////////////
+//
+//      Apply a given matrix to the image
+//
+///////////////////////////////////////////////////////////////////////////////
+template <typename T, typename S>
+bool TargaImage::Apply_Mask(const std::valarray<T> &matrix, std::function<S(S)> op){
 
+    auto masked{data};
+
+    std::valarray<T> result[3];
+    for( auto& v: result ){
+        v.resize(matrix.size());
+    }
+    int dim = static_cast<int>(sqrt(matrix.size())/2);
+    for( int j = 0; j < _height; ++j ){
+        for( int i = 0; i < _width; ++i ){
+            int xindex = dim;
+            int yindex = -dim;
+            // Load the matrix
+            for( size_t k = 0; k < matrix.size(); ++k ){
+                // We'll do it a slow way at first, then think about optimization
+                // The biggest roadblock to a good algorithm is optimizing too early
+                result[RED]  [k] = data[index(std::clamp(i+xindex, 0, _width-1 ), std::clamp(j+yindex, 0, _height-1) ) + RED];
+                result[GREEN][k] = data[index(std::clamp(i+xindex, 0, _width-1 ), std::clamp(j+yindex, 0, _height-1) ) + GREEN];
+                result[BLUE] [k] = data[index(std::clamp(i+xindex, 0, _width-1 ), std::clamp(j+yindex, 0, _height-1) ) + BLUE];
+                // Update indexes
+                if( yindex == dim ){
+                    --xindex;
+                    yindex = -dim;
+                }else{
+                    ++yindex;
+                }
+            } // k
+            // hadamard
+
+            for( size_t i = 0; i < 3; ++i ){
+                result[i] *= matrix;
+            }
+            // The division is 1/(2^{(n-1)*2}
+            // That gets us 3=1/16, 5=1/256, 7=1/1024, etc.
+            // Now stuff it back in
+            masked[ index(i,j) + RED ]   = std::clamp( op((result[RED]  .sum()) ), static_cast<S>(0), static_cast<S>(255u));
+            masked[ index(i,j) + GREEN ] = std::clamp( op((result[GREEN].sum()) ), static_cast<S>(0), static_cast<S>(255u));
+            masked[ index(i,j) + BLUE ]  = std::clamp( op((result[BLUE] .sum()) ), static_cast<S>(0), static_cast<S>(255u));
+            // Update indexes
+        } // j
+    } // i
+
+    swap(data,masked);
+}
 #endif
 
 

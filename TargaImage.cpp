@@ -27,14 +27,6 @@
 
 using namespace std;
 
-// constants
-constexpr int           RED             = 0;                // red channel
-constexpr int           GREEN           = 1;                // green channel
-constexpr int           BLUE            = 2;                // blue channel
-constexpr int           ALPHA           = 3;                // alpha channel
-const unsigned char BACKGROUND[3]   = { 0, 0, 0 };          // background color
-
-
 // Computes n choose s, efficiently
 constexpr double Binomial(int n, int s)
 {
@@ -46,7 +38,8 @@ constexpr double Binomial(int n, int s)
     return res;
 }// Binomial
 
-// Fills matrix with binomial
+// Fills matrix with binomial using an inplace calculation of
+// pascal's triangle and then backfilling the values.
 template <typename T>
 void GaussMask(valarray<T> &matrix){
     const size_t size = static_cast<size_t>(sqrt(matrix.size()));
@@ -604,7 +597,6 @@ bool TargaImage::Difference(const vector<uchar>& remove )
     return true;
 }// Difference
 
-
 ///////////////////////////////////////////////////////////////////////////////
 //
 //      Perform 5x5 box filter on this image.  Return success of operation.
@@ -622,47 +614,8 @@ bool TargaImage::Filter_Box()
         1, 1, 1,
         1, 1, 1
     };
-    // We'll use a uint32_t to store the result, then scale it down.
-    // We'll have 8bit, multiplied by most a 1bit, needing 8bits, then added together with the most 25 times, so another 5 bits, making
-    // a total of 13bits needed. A 32bit int can hold the entire summation, and a 16bit int is all we need for the matrix
-    // itself
-    valarray<uint32_t> result[3];
-    for( auto& v: result ){
-        v.resize(matrix.size());
-    }
-    for( int j = 0; j < _height; ++j ){
-        for( int i = 0; i < _width; ++i ){
-            int xindex = 1;
-            int yindex = -1;
-            // Load the matrix
-            for( size_t k = 0; k < matrix.size(); ++k ){
-                // We'll do it a slow way at first, then think about optimization
-                // The biggest roadblock to a good algorithm is optimizing too early
-                result[RED]  [k] = data[index(clamp(i+xindex, 0, _width-1 ), clamp(j+yindex, 0, _height-1) ) + RED];
-                result[GREEN][k] = data[index(clamp(i+xindex, 0, _width-1 ), clamp(j+yindex, 0, _height-1) ) + GREEN];
-                result[BLUE] [k] = data[index(clamp(i+xindex, 0, _width-1 ), clamp(j+yindex, 0, _height-1) ) + BLUE];
-                // Update indexes
-                if( yindex == 1 ){
-                    --xindex;
-                    yindex = -1;
-                }else{
-                    ++yindex;
-                }
-            } // k
-            // hadamard
 
-            for( size_t i = 0; i < 3; ++i ){
-                result[i] *= matrix;
-            }
-            // Now stuff it back in
-            box[ index(i,j) + RED ]   = static_cast<uchar>(clamp( ((result[RED]  .sum()) / 9 ), 0u, 255u));
-            box[ index(i,j) + GREEN ] = static_cast<uchar>(clamp( ((result[GREEN].sum()) / 9 ), 0u, 255u));
-            box[ index(i,j) + BLUE ]  = static_cast<uchar>(clamp( ((result[BLUE] .sum()) / 9 ), 0u, 255u));
-            // Update indexes
-        } // j
-    } // i
-    swap(data,box);
-    return true;
+    return Apply_Mask<uint32_t,uint32_t>(matrix, [](auto c)->uint32_t{return c/9;});
 }// Filter_Box
 
 
@@ -674,11 +627,6 @@ bool TargaImage::Filter_Box()
 ///////////////////////////////////////////////////////////////////////////////
 bool TargaImage::Filter_Bartlett()
 {
-    auto bart{data};
-
-    // We'll load a vector flattened with the gaussian blurr, and then pull from our original image
-    // while pushing to our copy.
-
     const valarray<uint32_t> matrix= {
         1, 2, 3, 2, 1,
         2, 4, 6, 4, 2,
@@ -686,47 +634,7 @@ bool TargaImage::Filter_Bartlett()
         2, 4, 6, 4, 2,
         1, 2, 3, 2, 1
     };
-    // We'll use a uint32_t to store the result, then scale it down.
-    // We'll have 8bit, multiplied by most a 4bit, needing 12bits, then added together with the most 25 times, so another 5 bits, making
-    // a total of 17bits needed. A 32bit int can hold the entire summation, and arguabbly a 16bit int is all we need for the matrix
-    // itself
-    valarray<uint32_t> result[3];
-    for( auto& v: result ){
-        v.resize(matrix.size());
-    }
-    for( int j = 0; j < _height; ++j ){
-        for( int i = 0; i < _width; ++i ){
-            int xindex = 2;
-            int yindex = -2;
-            // Load the matrix
-            for( size_t k = 0; k < matrix.size(); ++k ){
-                // We'll do it a slow way at first, then think about optimization
-                // The biggest roadblock to a good algorithm is optimizing too early
-                result[RED]  [k] = data[index(clamp(i+xindex, 0, _width-1 ), clamp(j+yindex, 0, _height-1) ) + RED];
-                result[GREEN][k] = data[index(clamp(i+xindex, 0, _width-1 ), clamp(j+yindex, 0, _height-1) ) + GREEN];
-                result[BLUE] [k] = data[index(clamp(i+xindex, 0, _width-1 ), clamp(j+yindex, 0, _height-1) ) + BLUE];
-                // Update indexes
-                if( yindex == 2 ){
-                    --xindex;
-                    yindex = -2;
-                }else{
-                    ++yindex;
-                }
-            } // k
-            // hadamard
-
-            for( size_t i = 0; i < 3; ++i ){
-                result[i] *= matrix;
-            }
-            // Now stuff it back in
-            bart[ index(i,j) + RED ]   = clamp( ((result[RED]  .sum()) / 81 ), 0u, 255u) ;
-            bart[ index(i,j) + GREEN ] = clamp( ((result[GREEN].sum()) / 81 ), 0u, 255u) ;
-            bart[ index(i,j) + BLUE ]  = clamp( ((result[BLUE] .sum()) / 81 ), 0u, 255u) ;
-            // Update indexes
-        } // j
-    } // i
-    swap(data,bart);
-    return true;
+    return Apply_Mask<uint32_t,uint32_t>(matrix, [](auto c)->uint32_t{return c/81;});
 }// Filter_Bartlett
 
 
@@ -750,66 +658,10 @@ bool TargaImage::Filter_Gaussian()
 
 bool TargaImage::Filter_Gaussian_N( unsigned int N )
 {
-    auto gauss{data};
-
-    // We'll load a vector flattened with the gaussian blurr, and then pull from our original image
-    // while pushing to our copy.
-
-    // The hardest part will be coming up with an approprietly sized matrix filled with binomial values,
-    // but everything else here is easily generalized
-
-    // An easy way to work this is to say that each element is equal to its (row_0, col_cur) * (row_cur, col_0).
-    // Then we can use binomial to get the first half of the first row, duplicate it across
-    // Then copy that down the column
-
     valarray<uint32_t> matrix(N*N);
     GaussMask(matrix);
 
-    // We'll use a uint32_t to store the result, then scale it down.
-    // We'll have 8bit, multiplied by most a 6bit, needing 14bits, then added together with the most 25 times, so another 5 bits, making
-    // a total of 19bits needed. A 32bit int can hold the entire summation, and arguabbly a 16bit int is all we need for the matrix
-    // itself
-    valarray<uint32_t> result[3];
-    for( auto& v: result ){
-        v.resize(matrix.size());
-    }
-    int dim = static_cast<int>(sqrt(matrix.size())/2);
-    for( int j = 0; j < _height; ++j ){
-        for( int i = 0; i < _width; ++i ){
-            int xindex = dim;
-            int yindex = -dim;
-            // Load the matrix
-            for( size_t k = 0; k < matrix.size(); ++k ){
-                // We'll do it a slow way at first, then think about optimization
-                // The biggest roadblock to a good algorithm is optimizing too early
-                result[RED]  [k] = data[index(clamp(i+xindex, 0, _width-1 ), clamp(j+yindex, 0, _height-1) ) + RED];
-                result[GREEN][k] = data[index(clamp(i+xindex, 0, _width-1 ), clamp(j+yindex, 0, _height-1) ) + GREEN];
-                result[BLUE] [k] = data[index(clamp(i+xindex, 0, _width-1 ), clamp(j+yindex, 0, _height-1) ) + BLUE];
-                // Update indexes
-                if( yindex == dim ){
-                    --xindex;
-                    yindex = -dim;
-                }else{
-                    ++yindex;
-                }
-            } // k
-            // hadamard
-
-            for( size_t i = 0; i < 3; ++i ){
-                result[i] *= matrix;
-            }
-            // The division is 1/(2^{(n-1)*2}
-            // That gets us 3=1/16, 5=1/256, 7=1/1024, etc.
-            // Now stuff it back in
-            gauss[ index(i,j) + RED ]   = clamp( ((result[RED]  .sum()) >> ((N-1)*2) ), 0u, 255u) ;
-            gauss[ index(i,j) + GREEN ] = clamp( ((result[GREEN].sum()) >> ((N-1)*2) ), 0u, 255u) ;
-            gauss[ index(i,j) + BLUE ]  = clamp( ((result[BLUE] .sum()) >> ((N-1)*2) ), 0u, 255u) ;
-            // Update indexes
-        } // j
-    } // i
-
-    swap(data,gauss);
-    return true;
+    return Apply_Mask<uint32_t,uint32_t>(matrix, [N](auto c){return c >> ((N-1)*2);});
 }// Filter_Gaussian_N
 
 
@@ -872,6 +724,7 @@ bool TargaImage::Filter_Edge()
             // Update indexes
         } // j
     } // i
+    //Apply_Mask<int64_t,uint64_t>(matrix, [](auto c)->uint32_t{return c >> 8;});
     this->Difference(gauss);
     //swap(data,_gauss.data);
     return true;
