@@ -378,14 +378,7 @@ bool TargaImage::Quant_Populosity()
     partial_sort(sorted.begin(),sorted.begin()+256,sorted.end(),[](auto lhs, auto rhs)->bool{
         return lhs.second > rhs.second;
     });
-//    // Print out colors for debugging - looks nice so far
-//    for_each(sorted.begin(), sorted.begin()+256,[&unmask](auto &c){
-//        auto [r,g,b] = unmask(c.first);
-//        cout << "Histogram: [" << static_cast<uint32_t>(r) << ", "
-//                << static_cast<uint32_t>(g) << ", "
-//                << static_cast<uint32_t>(b) << "] "
-//                << " => " << c.second << endl;
-//    });
+
     // We're going to dp this, make a mapping from color->quantized
     unordered_map<uint32_t,uint32_t> color_map;
     for_each( count_sort.begin(), count_sort.end(), [&](auto cs){
