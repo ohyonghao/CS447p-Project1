@@ -955,11 +955,11 @@ void TargaImage::ClearToBlack()
 //
 ///////////////////////////////////////////////////////////////////////////////
 void TargaImage::Paint_Stroke(const Stroke& s) {
-   int radius_squared = (int)s.radius * (int)s.radius;
-   for (int x_off = -((int)s.radius); x_off <= (int)s.radius; x_off++) {
-      for (int y_off = -((int)s.radius); y_off <= (int)s.radius; y_off++) {
-         int x_loc = (int)s.x + x_off;
-         int y_loc = (int)s.y + y_off;
+   int radius_squared = static_cast<int>(s.radius) * static_cast<int>(s.radius);
+   for (int x_off = -(static_cast<int>(s.radius)); x_off <= static_cast<int>(s.radius); x_off++) {
+      for (int y_off = -(static_cast<int>(s.radius)); y_off <= static_cast<int>(s.radius); y_off++) {
+         int x_loc = static_cast<int>(s.x) + x_off;
+         int y_loc = static_cast<int>(s.y) + y_off;
          // are we inside the circle, and inside the image?
          if ((x_loc >= 0 && x_loc < _width && y_loc >= 0 && y_loc < _height)) {
             int dist_squared = x_off * x_off + y_off * y_off;
