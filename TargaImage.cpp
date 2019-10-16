@@ -336,8 +336,105 @@ bool TargaImage::Quant_Uniform()
 ///////////////////////////////////////////////////////////////////////////////
 bool TargaImage::Quant_Populosity()
 {
-    ClearToBlack();
-    return false;
+    // Endian issue
+    auto unmask = [](uint32_t rgb)->tuple<uchar,uchar,uchar>{
+        //
+        uchar r = (rgb) & 0b11111111;
+        uchar g = (rgb >> 8) & 0b11111111;
+        uchar b = (rgb >> 16 ) & 0b11111111;
+        return {r,g,b};
+    };
+
+    auto mask = [](uint32_t r, uint32_t g, uint32_t b)->uint32_t{
+            return r | g << 8 | b << 16 | (0b11111111u << 24);
+    };
+
+    // We want to convert from 24bit to 8bit
+
+    // Do a Quant_Uniform down to 5 for each level (5x5x5) rather than
+    // what we did for Quant_Uniform of (3x3x2) (these are powers of 2)
+    Quant_Uniform(5,5,5);
+    unordered_map<uint32_t,uint64_t> count_sort;
+
+    // find the 256 most popular colors
+    // I need to get this down to only the 2^15 colors
+    // so I need to convert to a unordered_map most likely
+    // so I can minimize the number of items, this has the
+    // added benefit of then not needing to check for 0 in
+    // my color_map step
+    for( auto it = data.begin(); it < data.end(); it+=4 ){
+        // Read in all colors and remove alpha
+        uint32_t c = *reinterpret_cast<uint32_t*>(it.base());
+        count_sort[c]++;
+    }
+    // This is all wrong
+    typedef pair<uint32_t,uint64_t> key_pair;
+    vector<key_pair> sorted;
+    sorted.reserve(1<<15);
+    for( auto it = count_sort.begin(); it != count_sort.end(); ++it ){
+        sorted.push_back(*it);
+    }
+    // Only sort out the top 256, then quit
+    partial_sort(sorted.begin(),sorted.begin()+256,sorted.end(),[](auto lhs, auto rhs)->bool{
+        return lhs.second > rhs.second;
+    });
+//    // Print out colors for debugging - looks nice so far
+//    for_each(sorted.begin(), sorted.begin()+256,[&unmask](auto &c){
+//        auto [r,g,b] = unmask(c.first);
+//        cout << "Histogram: [" << static_cast<uint32_t>(r) << ", "
+//                << static_cast<uint32_t>(g) << ", "
+//                << static_cast<uint32_t>(b) << "] "
+//                << " => " << c.second << endl;
+//    });
+    // We're going to dp this, make a mapping from color->quantized
+    unordered_map<uint32_t,uint32_t> color_map;
+    for_each( count_sort.begin(), count_sort.end(), [&](auto cs){
+        auto t = unmask(cs.first);
+        uchar r1 = get<RED>(t);
+        uchar g1 = get<GREEN>(t);
+        uchar b1 = get<BLUE>(t);
+        uint32_t nearest_color{0};
+        uint32_t closest_distance = numeric_limits<uint32_t>::max();
+        // Brute force finding it through the first 256 in sorted
+        for_each(sorted.begin(),sorted.begin()+256,[&](auto s){
+            auto [r2,g2,b2] = unmask(s.first);
+            uint32_t distance = (r1-r2)*(r1-r2) + (g1-g2)*(g1-g2) + (b1-b2)*(b1-b2);
+            if( distance < closest_distance ){
+                nearest_color = s.first;
+                closest_distance = distance;
+            }
+        });
+        color_map[cs.first] = nearest_color;
+    });
+    auto printcolor = [&unmask](auto c){
+        auto [r,g,b] = unmask(c);
+        cout << "[" << static_cast<uint32_t>(r) << ","
+                    << static_cast<uint32_t>(g) << ","
+                    << static_cast<uint32_t>(b) << "," << "]";
+    };
+    // Print out colors for debugging - looks nice so far
+    for_each(color_map.begin(), color_map.end(),[&printcolor,&unmask](auto &c){
+        auto [r,g,b] = unmask(c.first);
+        if( b > 100 && r < 100 && g < 100){
+        cout << "Color: ";
+        //<< c.first << " => " << c.second << endl;
+        printcolor(c.first);
+        cout << " => ";
+        printcolor(c.second);
+        cout << endl;
+        }
+    });
+    for( auto it = data.begin(); it < data.end(); it+=4 ){
+        if( color_map.count(*reinterpret_cast<uint32_t*>(it.base())) == 0 ){
+            cout << "Uh-oh, something went wrong, a color is missing" << endl;
+        }
+        auto [r,g,b] = unmask(color_map[*reinterpret_cast<uint32_t*>(it.base())]);
+        *(it + RED)   = r;
+        *(it + GREEN) = g;
+        *(it + BLUE)  = b;
+    }
+    // Now, for each pixel we calculate the distance
+    return true;
 }// Quant_Populosity
 
 
