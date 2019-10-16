@@ -157,13 +157,11 @@ bool TargaImage::Apply_Mask(const std::valarray<T> &matrix, std::function<S(S)> 
                     ++yindex;
                 }
             } // k
-            // hadamard
 
+            // hadamard
             for( size_t i = 0; i < 3; ++i ){
                 result[i] *= matrix;
             }
-            // The division is 1/(2^{(n-1)*2}
-            // That gets us 3=1/16, 5=1/256, 7=1/1024, etc.
             // Now stuff it back in
             masked[ index(i,j) + RED ]   = std::clamp( op((result[RED]  .sum()) ), static_cast<S>(0), static_cast<S>(255u));
             masked[ index(i,j) + GREEN ] = std::clamp( op((result[GREEN].sum()) ), static_cast<S>(0), static_cast<S>(255u));

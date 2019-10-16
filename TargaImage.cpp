@@ -661,6 +661,8 @@ bool TargaImage::Filter_Gaussian_N( unsigned int N )
     valarray<uint32_t> matrix(N*N);
     GaussMask(matrix);
 
+    // The division is 1/(2^{(n-1)*2}
+    // That gets us 3=1/16, 5=1/256, 7=1/1024, etc.
     return Apply_Mask<uint32_t,uint32_t>(matrix, [N](auto c){return c >> ((N-1)*2);});
 }// Filter_Gaussian_N
 
