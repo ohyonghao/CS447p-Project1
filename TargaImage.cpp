@@ -46,6 +46,52 @@ constexpr double Binomial(int n, int s)
     return res;
 }// Binomial
 
+// Fills matrix with binomial
+template <typename T>
+void GaussMask(valarray<T> &matrix){
+    const size_t size = static_cast<size_t>(sqrt(matrix.size()));
+    const size_t half = (size >> 1 ) ;//+ (size &0b1 ? 1 : 0);
+    // If matrix is empty or not square then return
+    if( size == 0 || size * size != matrix.size() ){
+        return;
+    }
+
+    // Calculate sizeth row of pascals triangle
+    matrix[0] = 1;
+    for( size_t i = 1; i < size; ++i){
+        matrix[i*size] = matrix[i*size+i] = 1;
+        for( size_t j = 1; j < i; ++j){
+            matrix[i*size+j] = matrix[(i-1)*size + j - 1] + matrix[(i-1)*size + j];
+        }
+    }
+    // Fill in matrix
+    for( size_t i = 1; i < size - 1; ++i ){
+        // Fill in edge
+        matrix[i] = matrix[i*size] = matrix[(size-1)*size + i];
+        // Now fill in middle diagonally
+        for( size_t j = 1; j <= i; ++j){
+            matrix[i*size + j] = matrix[j] * matrix[i*size];
+        }
+    }
+    // Backfill
+    for( size_t i = size - 2; i != 0; --i){
+        // Fill in size - i on the end
+        if( i > half ){
+            for( size_t j = 0; j < size - i; ++j){
+                matrix[(i+1)*size - j - 1] = matrix[i*size + j];
+            }
+        }else if( i < half ){
+            for( size_t j = 0; j < size - i; ++j){
+                matrix[(i+1)*size - j - 1] = matrix[(i+half)*size + j];
+            }
+        }else{
+            for( size_t j = 0; j < half; ++j){
+                matrix[(i+1)*size - j - 1] = matrix[i*size + j];
+            }
+        }
+    }
+    matrix[size-1] = 1; // Fix the top right corner
+}
 template< int N, int M, typename IN, typename OUT, typename UNOP>
 void transform_n_less_m(IN first, IN last, OUT result, UNOP op){
     while( first != last ){
@@ -755,7 +801,7 @@ bool TargaImage::Filter_Gaussian()
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-bool TargaImage::Filter_Gaussian_N( unsigned int /*N*/ )
+bool TargaImage::Filter_Gaussian_N( unsigned int N )
 {
     auto gauss{data};
 
@@ -769,13 +815,8 @@ bool TargaImage::Filter_Gaussian_N( unsigned int /*N*/ )
     // Then we can use binomial to get the first half of the first row, duplicate it across
     // Then copy that down the column
 
-    const valarray<uint32_t> matrix= {
-        1,  4,  6,  4, 1,
-        4, 16, 24, 16, 4,
-        6, 24, 36, 24, 6,
-        4, 16, 24, 16, 4,
-        1,  4,  6,  4, 1
-    };
+    valarray<uint32_t> matrix(N*N);
+    GaussMask(matrix);
 
     // We'll use a uint32_t to store the result, then scale it down.
     // We'll have 8bit, multiplied by most a 6bit, needing 14bits, then added together with the most 25 times, so another 5 bits, making
@@ -810,10 +851,12 @@ bool TargaImage::Filter_Gaussian_N( unsigned int /*N*/ )
             for( size_t i = 0; i < 3; ++i ){
                 result[i] *= matrix;
             }
+            // The division is 1/(2^{(n-1)*2}
+            // That gets us 3=1/16, 5=1/256, 7=1/1024, etc.
             // Now stuff it back in
-            gauss[ index(i,j) + RED ]   = clamp( ((result[RED]  .sum()) >> 8 ), 0u, 255u) ;
-            gauss[ index(i,j) + GREEN ] = clamp( ((result[GREEN].sum()) >> 8 ), 0u, 255u) ;
-            gauss[ index(i,j) + BLUE ]  = clamp( ((result[BLUE] .sum()) >> 8 ), 0u, 255u) ;
+            gauss[ index(i,j) + RED ]   = clamp( ((result[RED]  .sum()) >> ((N-1)*2) ), 0u, 255u) ;
+            gauss[ index(i,j) + GREEN ] = clamp( ((result[GREEN].sum()) >> ((N-1)*2) ), 0u, 255u) ;
+            gauss[ index(i,j) + BLUE ]  = clamp( ((result[BLUE] .sum()) >> ((N-1)*2) ), 0u, 255u) ;
             // Update indexes
         } // j
     } // i
