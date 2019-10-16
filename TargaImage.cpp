@@ -696,8 +696,15 @@ bool TargaImage::Filter_Edge()
 ///////////////////////////////////////////////////////////////////////////////
 bool TargaImage::Filter_Enhance()
 {
-    ClearToBlack();
-    return false;
+    valarray<int64_t> matrix(5*5);
+    GaussMask(matrix);
+    matrix*=-1;
+    matrix[12] = 2*256-36;
+
+    Apply_Mask<int64_t,uint64_t>(matrix, [](int64_t c)->int64_t{
+        return c < 0 ? 0 : c >> 8;
+    });
+    return true;
 }// Filter_Enhance
 
 
