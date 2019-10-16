@@ -171,6 +171,7 @@ bool TargaImage::Apply_Mask(const std::valarray<T> &matrix, std::function<S(S)> 
     } // i
 
     swap(data,masked);
+    return true;
 }
 #endif
 
