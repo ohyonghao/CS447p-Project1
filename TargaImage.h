@@ -49,6 +49,7 @@ class TargaImage
 
         bool To_Grayscale();
 
+        bool Quant_Uniform(uchar r, uchar g, uchar b);
         bool Quant_Uniform();
         bool Quant_Populosity();
         bool Quant_Median();

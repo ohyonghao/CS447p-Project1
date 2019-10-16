@@ -17,13 +17,15 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <memory.h>
-#include <math.h>
+#include <cmath>
 #include <iostream>
 #include <sstream>
 #include <vector>
 #include <algorithm>
 #include <valarray>
 #include <random>
+#include <map>
+#include <functional>
 
 using namespace std;
 
@@ -289,29 +291,39 @@ bool TargaImage::To_Grayscale()
 //  success of operation.
 //
 ///////////////////////////////////////////////////////////////////////////////
-bool TargaImage::Quant_Uniform()
-{
-    // Should be a simple transform
-    // starting at -1 is so we can increment first and it makes the
-    // switch easy
 
+bool TargaImage::Quant_Uniform(uchar r, uchar g, uchar b){
     // Clear the n bits, then move it to the midpoint of each bucket
     int count{-1}; // used statically in transform
 
-    transform(data.begin(),data.end(),data.begin(),[&count](auto c){
+    transform(data.begin(),data.end(),data.begin(),[=,&count](auto c){
         ++count;
+        auto quant = [c](auto shift)->uchar{
+            return static_cast<uchar>(((c >> (8 - shift) ) << (8 - shift)) + (1<<(8 - (shift + 1))));
+        };
         switch( count ){
         case RED:
+            return quant(r);
         case GREEN:
-            return static_cast<uchar>(((c >> 5 ) << 5) + (1<<4));
+            return quant(g);
         case BLUE:
-            return static_cast<uchar>(((c >> 6 ) << 6) + (1<<5));
+            return quant(b);
         case ALPHA:
             count = -1;
             return c;
         }
 
     });
+    return true;
+}
+
+bool TargaImage::Quant_Uniform()
+{
+    // Should be a simple transform
+    // starting at -1 is so we can increment first and it makes the
+    // switch easy
+
+    Quant_Uniform(3,3,2);
     return true;
 }// Quant_Uniform
 
