@@ -835,7 +835,7 @@ bool TargaImage::Double_Size()
 //  assumed to be greater than one.  Return success of operation.
 //
 ///////////////////////////////////////////////////////////////////////////////
-bool TargaImage::Resize(float scale)
+bool TargaImage::Resize(float /*scale*/)
 {
     ClearToBlack();
     return false;
@@ -848,7 +848,7 @@ bool TargaImage::Resize(float scale)
 //  image.  Return success of operation.
 //
 ///////////////////////////////////////////////////////////////////////////////
-bool TargaImage::Rotate(float angleDegrees)
+bool TargaImage::Rotate(float /*angleDegrees*/)
 {
     ClearToBlack();
     return false;
@@ -937,19 +937,19 @@ void TargaImage::Paint_Stroke(const Stroke& s) {
          if ((x_loc >= 0 && x_loc < _width && y_loc >= 0 && y_loc < _height)) {
             int dist_squared = x_off * x_off + y_off * y_off;
             if (dist_squared <= radius_squared) {
-               data[(y_loc * _width + x_loc) * 4 + 0] = s.r;
-               data[(y_loc * _width + x_loc) * 4 + 1] = s.g;
-               data[(y_loc * _width + x_loc) * 4 + 2] = s.b;
-               data[(y_loc * _width + x_loc) * 4 + 3] = s.a;
+               data[static_cast<size_t>((y_loc * _width + x_loc) * 4 + 0)] = s.r;
+               data[static_cast<size_t>((y_loc * _width + x_loc) * 4 + 1)] = s.g;
+               data[static_cast<size_t>((y_loc * _width + x_loc) * 4 + 2)] = s.b;
+               data[static_cast<size_t>((y_loc * _width + x_loc) * 4 + 3)] = s.a;
             } else if (dist_squared == radius_squared + 1) {
-               data[(y_loc * _width + x_loc) * 4 + 0] =
-                  (data[(y_loc * _width + x_loc) * 4 + 0] + s.r) / 2;
-               data[(y_loc * _width + x_loc) * 4 + 1] =
-                  (data[(y_loc * _width + x_loc) * 4 + 1] + s.g) / 2;
-               data[(y_loc * _width + x_loc) * 4 + 2] =
-                  (data[(y_loc * _width + x_loc) * 4 + 2] + s.b) / 2;
-               data[(y_loc * _width + x_loc) * 4 + 3] =
-                  (data[(y_loc * _width + x_loc) * 4 + 3] + s.a) / 2;
+               data[static_cast<size_t>((y_loc * _width + x_loc) * 4 + 0)] =
+                  (data[static_cast<size_t>((y_loc * _width + x_loc) * 4 + 0)] + s.r) / 2;
+               data[static_cast<size_t>((y_loc * _width + x_loc) * 4 + 1)] =
+                  (data[static_cast<size_t>((y_loc * _width + x_loc) * 4 + 1)] + s.g) / 2;
+               data[static_cast<size_t>((y_loc * _width + x_loc) * 4 + 2)] =
+                  (data[static_cast<size_t>((y_loc * _width + x_loc) * 4 + 2)] + s.b) / 2;
+               data[static_cast<size_t>((y_loc * _width + x_loc) * 4 + 3)] =
+                  (data[static_cast<size_t>((y_loc * _width + x_loc) * 4 + 3)] + s.a) / 2;
             }
          }
       }
