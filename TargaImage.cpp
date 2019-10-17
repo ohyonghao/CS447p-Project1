@@ -116,7 +116,7 @@ TargaImage::TargaImage() :
 TargaImage::TargaImage(int w, int h) :
     _width{w},
     _height{h},
-    data(w*h*4u)
+    data(static_cast<size_t>(w*h*4))
 {
    ClearToBlack();
 }// TargaImage
@@ -132,12 +132,9 @@ TargaImage::TargaImage(int w, int h, unsigned char *d) :
     _width{w},
     _height{h}
 {
-    uint i;
+    data.resize(static_cast<size_t>(_width * _height * 4));
 
-    data.resize(_width * _height * 4u);
-
-    for (i = 0; i < _width * _height * 4u; i++)
-	    data[i] = d[i];
+    copy(d, d + data.size(), data.begin());
 }// TargaImage
 
 
@@ -309,6 +306,7 @@ bool TargaImage::Quant_Uniform(uchar r, uchar g, uchar b){
         case BLUE:
             return quant(b);
         case ALPHA:
+        default:
             count = -1;
             return c;
         }
@@ -343,10 +341,6 @@ bool TargaImage::Quant_Populosity()
         uchar g = (rgb >> 8) & 0b11111111;
         uchar b = (rgb >> 16 ) & 0b11111111;
         return {r,g,b};
-    };
-
-    auto mask = [](uint32_t r, uint32_t g, uint32_t b)->uint32_t{
-            return r | g << 8 | b << 16 | (0b11111111u << 24);
     };
 
     // We want to convert from 24bit to 8bit
@@ -399,32 +393,11 @@ bool TargaImage::Quant_Populosity()
         });
         color_map[cs.first] = nearest_color;
     });
-    auto printcolor = [&unmask](auto c){
-        auto [r,g,b] = unmask(c);
-        cout << "[" << static_cast<uint32_t>(r) << ","
-                    << static_cast<uint32_t>(g) << ","
-                    << static_cast<uint32_t>(b) << "," << "]";
-    };
-    // Print out colors for debugging - looks nice so far
-    for_each(color_map.begin(), color_map.end(),[&printcolor,&unmask](auto &c){
-        auto [r,g,b] = unmask(c.first);
-        if( b > 100 && r < 100 && g < 100){
-        cout << "Color: ";
-        //<< c.first << " => " << c.second << endl;
-        printcolor(c.first);
-        cout << " => ";
-        printcolor(c.second);
-        cout << endl;
-        }
-    });
     for( auto it = data.begin(); it < data.end(); it+=4 ){
         if( color_map.count(*reinterpret_cast<uint32_t*>(it.base())) == 0 ){
             cout << "Uh-oh, something went wrong, a color is missing" << endl;
         }
-        auto [r,g,b] = unmask(color_map[*reinterpret_cast<uint32_t*>(it.base())]);
-        *(it + RED)   = r;
-        *(it + GREEN) = g;
-        *(it + BLUE)  = b;
+        *reinterpret_cast<uint32_t*>(it.base()) = color_map[*reinterpret_cast<uint32_t*>(it.base())];
     }
     // Now, for each pixel we calculate the distance
     return true;
@@ -919,12 +892,12 @@ TargaImage* TargaImage::Reverse_Rows(void)
     if (data.empty())
         return nullptr;
 
-    for (int i = 0 ; i < _height ; i++)
+    for (uint i = 0 ; i < static_cast<uint>(_height) ; i++)
     {
-        int in_offset = (_height - i - 1) * _width * 4;
-        int out_offset = i * _width * 4;
+        uint in_offset = (static_cast<uint>(_height) - i - 1) * static_cast<uint>(_width) * 4;
+        uint out_offset = i * static_cast<uint>(_width) * 4;
 
-        for (int j = 0 ; j < _width ; j++)
+        for (uint j = 0 ; j < static_cast<uint>(_width) ; j++)
         {
             dest[out_offset + j * 4 + RED]   = data[in_offset + j * 4 + RED];
             dest[out_offset + j * 4 + GREEN] = data[in_offset + j * 4 + GREEN];
