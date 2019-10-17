@@ -685,11 +685,6 @@ bool TargaImage::Difference(const vector<uchar>& remove )
 ///////////////////////////////////////////////////////////////////////////////
 bool TargaImage::Filter_Box()
 {
-    auto box{data};
-
-    // We'll load a vector flattened with the gaussian blurr, and then pull from our original image
-    // while pushing to our copy.
-
     const valarray<uint32_t> matrix= {
         1, 1, 1,
         1, 1, 1,
