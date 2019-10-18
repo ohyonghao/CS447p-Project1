@@ -26,7 +26,7 @@ class CScriptHandler
         //  returned.  Otherwise return true.
         //  
         ///////////////////////////////////////////////////////////////////////////////
-        static bool HandleCommand(const char* sCommand, TargaImage*& pImage);
+        static bool HandleCommand(const std::string sCommand, TargaImage*& pImage);
 
         ///////////////////////////////////////////////////////////////////////////////
         //

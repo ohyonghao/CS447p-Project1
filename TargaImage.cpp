@@ -359,7 +359,7 @@ bool TargaImage::Quant_Populosity()
     // my color_map step
     for( auto it = data.begin(); it < data.end(); it+=4 ){
         // Read in all colors and remove alpha
-        uint32_t c = *reinterpret_cast<uint32_t*>(it._Ptr);
+        uint32_t c = *reinterpret_cast<uint32_t*>(&it);
         count_sort[c]++;
     }
     // This is all wrong
@@ -395,10 +395,10 @@ bool TargaImage::Quant_Populosity()
         color_map[cs.first] = nearest_color;
     });
     for( auto it = data.begin(); it < data.end(); it+=4 ){
-        if( color_map.count(*reinterpret_cast<uint32_t*>(it._Ptr)) == 0 ){
+        if( color_map.count(*reinterpret_cast<uint32_t*>(&it)) == 0 ){
             cout << "Uh-oh, something went wrong, a color is missing" << endl;
         }
-        *reinterpret_cast<uint32_t*>(it._Ptr) = color_map[*reinterpret_cast<uint32_t*>(it._Ptr)];
+        *reinterpret_cast<uint32_t*>(&it) = color_map[*reinterpret_cast<uint32_t*>(&it)];
     }
     // Now, for each pixel we calculate the distance
     return true;

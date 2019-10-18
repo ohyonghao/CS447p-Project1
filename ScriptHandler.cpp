@@ -16,6 +16,7 @@
 #include <string.h>
 #include <string>
 #include <sstream>
+#include <charconv>
 #include "TargaImage.h"
 
 using namespace std;
@@ -23,7 +24,7 @@ using namespace std;
 // constants
 const int       c_maxLineLength         = 1000;                         // maximum length of a command in a script
 const char      c_sWhiteSpace[]         = " \t\n\r"; 
-vector<string>      c_asCommands        = { "load",                     // valid commands
+const vector<string>      c_asCommands        = { "load",                     // valid commands
                                             "save",
                                             "run",
                                             "gray",
@@ -98,17 +99,18 @@ enum ECommands          // command ids
 //  returned.  Otherwise return true.
 //  
 ///////////////////////////////////////////////////////////////////////////////
-bool CScriptHandler::HandleCommand(const char* sCommand, TargaImage*& pImage)
+bool CScriptHandler::HandleCommand(const string sCommand, TargaImage*& pImage)
 {
-    if (!sCommand || !strlen(sCommand))
+    if (sCommand.empty()){
         return true;
+    }
 	string sCommandLine{sCommand};
 	std::istringstream iss(sCommandLine);
 	string sToken;
 	iss >> sToken;
 
     // find command that was given
-    int command;
+    size_t command;
     for (command = 0; command < NUM_COMMANDS; ++command)
         if( sToken == c_asCommands[command])
             break;
@@ -243,12 +245,13 @@ bool CScriptHandler::HandleCommand(const char* sCommand, TargaImage*& pImage)
 			string sN;
 			iss >> sN;
             
-            int N = atoi(sN.c_str());
-            if (N % 2 != 1) {
+            int N;
+            from_chars(sN.data(),sN.data()+sN.size(),N);
+            if (N % 2 != 1 || N < 0) {
                cout << "N \"" << N << "\" is not allowed; N must be an odd number." << endl;
                break;
             }
-            bResult = pImage->Filter_Gaussian_N(N);
+            bResult = pImage->Filter_Gaussian_N(static_cast<uint32_t>(N));
             break;
         }// FILTER_GUASS_N
 
@@ -296,7 +299,7 @@ bool CScriptHandler::HandleCommand(const char* sCommand, TargaImage*& pImage)
                 bParsed = bResult = false;
             }// if
             else
-                bResult = pImage->Resize(scale);
+                bResult = pImage->Resize(static_cast<float>(scale));
             break;
         }// SCALE
 
@@ -417,17 +420,17 @@ bool CScriptHandler::HandleCommand(const char* sCommand, TargaImage*& pImage)
         {
 			string sAngle;
 			iss >> sAngle;
-            float angle;
-
-            if (sAngle.empty() || !(angle = (float)atof(sAngle.c_str())))
+            float angle{0.0};
+            if( !sAngle.empty() ){
+                angle = static_cast<float>(atof(sAngle.data()));
+            }
+            if (angle == 0.0f)
             {
                 cout << "Invalid rotation angle." << endl;
                 bResult = bParsed = false;
             }// if
             else
                 bResult = pImage->Rotate(angle);
-            break;
-
             break;
         }// ROTATE
 
