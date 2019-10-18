@@ -338,12 +338,15 @@ bool TargaImage::Quant_Populosity()
     // Endian issue
     auto unmask = [](uint32_t rgb)->tuple<uchar,uchar,uchar>{
         //
-        uchar r = (rgb) & 0b11111111;
-        uchar g = (rgb >> 8) & 0b11111111;
-        uchar b = (rgb >> 16 ) & 0b11111111;
+        uchar r = (rgb >> 24) & 0b11111111u;
+        uchar g = (rgb >> 16) & 0b11111111u;
+        uchar b = (rgb >> 8 ) & 0b11111111u;
         return {r,g,b};
     };
 
+	auto To_RGB = [](auto it)->uint32_t {
+		return *(it + RED) << 24 | *(it + GREEN) << 16 | *(it + BLUE) << 8 | *(it + ALPHA);
+	};
     // We want to convert from 24bit to 8bit
 
     // Do a Quant_Uniform down to 5 for each level (5x5x5) rather than
@@ -359,18 +362,18 @@ bool TargaImage::Quant_Populosity()
     // my color_map step
     for( auto it = data.begin(); it < data.end(); it+=4 ){
         // Read in all colors and remove alpha
-        uint32_t c = *reinterpret_cast<uint32_t*>(&it);
+		uint32_t c = To_RGB(it);
         count_sort[c]++;
     }
     // This is all wrong
     typedef pair<uint32_t,uint64_t> key_pair;
     vector<key_pair> sorted;
-    sorted.reserve(1<<15);
+    sorted.reserve(count_sort.size());
     for( auto it = count_sort.begin(); it != count_sort.end(); ++it ){
         sorted.push_back(*it);
     }
     // Only sort out the top 256, then quit
-    partial_sort(sorted.begin(),sorted.begin()+256,sorted.end(),[](auto lhs, auto rhs)->bool{
+    partial_sort(sorted.begin(),sorted.begin()+min(static_cast<size_t>(256),sorted.size()),sorted.end(),[](auto lhs, auto rhs)->bool{
         return lhs.second > rhs.second;
     });
 
@@ -384,7 +387,7 @@ bool TargaImage::Quant_Populosity()
         uint32_t nearest_color{0};
         uint32_t closest_distance = numeric_limits<uint32_t>::max();
         // Brute force finding it through the first 256 in sorted
-        for_each(sorted.begin(),sorted.begin()+256,[&](auto s){
+        for_each(sorted.begin(),sorted.begin()+min(static_cast<size_t>(256),sorted.size()),[&](auto s){
             auto [r2,g2,b2] = unmask(s.first);
             uint32_t distance = (r1-r2)*(r1-r2) + (g1-g2)*(g1-g2) + (b1-b2)*(b1-b2);
             if( distance < closest_distance ){
@@ -395,10 +398,13 @@ bool TargaImage::Quant_Populosity()
         color_map[cs.first] = nearest_color;
     });
     for( auto it = data.begin(); it < data.end(); it+=4 ){
-        if( color_map.count(*reinterpret_cast<uint32_t*>(&it)) == 0 ){
+        if( color_map.count(To_RGB(it)) == 0 ){
             cout << "Uh-oh, something went wrong, a color is missing" << endl;
         }
-        *reinterpret_cast<uint32_t*>(&it) = color_map[*reinterpret_cast<uint32_t*>(&it)];
+        auto [r,g,b]  = unmask(color_map[To_RGB(it)]);
+		*(it + RED)   = r;
+		*(it + GREEN) = g;
+		*(it + BLUE)  = b;
     }
     // Now, for each pixel we calculate the distance
     return true;
