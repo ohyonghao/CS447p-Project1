@@ -12,7 +12,7 @@
 
 #ifndef C_SCRIPT_HANDLER
 #define C_SCRIPT_HANDLER
-
+#include <string>
 class TargaImage;
 
 class CScriptHandler
@@ -36,7 +36,7 @@ class CScriptHandler
         //  otherwise false is returned.
         //
         ///////////////////////////////////////////////////////////////////////////////
-        static bool HandleScriptFile(const char* sFilename, TargaImage*& pImage);
+        static bool HandleScriptFile(const std::string sFilename, TargaImage*& pImage);
 };// CScriptHandler
 
 #endif // _C_SCRIPT_HANDLER

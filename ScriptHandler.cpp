@@ -14,6 +14,8 @@
 #include <iostream>
 #include <fstream>
 #include <string.h>
+#include <string>
+#include <sstream>
 #include "TargaImage.h"
 
 using namespace std;
@@ -21,7 +23,7 @@ using namespace std;
 // constants
 const int       c_maxLineLength         = 1000;                         // maximum length of a command in a script
 const char      c_sWhiteSpace[]         = " \t\n\r"; 
-const char      c_asCommands[][32]      = { "load",                     // valid commands
+vector<string>      c_asCommands        = { "load",                     // valid commands
                                             "save",
                                             "run",
                                             "gray",
@@ -100,15 +102,15 @@ bool CScriptHandler::HandleCommand(const char* sCommand, TargaImage*& pImage)
 {
     if (!sCommand || !strlen(sCommand))
         return true;
-
-    char* sCommandLine = new char[strlen(sCommand) + 1];
-    strcpy(sCommandLine, sCommand);
-    char* sToken = strtok(sCommandLine, c_sWhiteSpace);
+	string sCommandLine{sCommand};
+	std::istringstream iss(sCommandLine);
+	string sToken;
+	iss >> sToken;
 
     // find command that was given
     int command;
     for (command = 0; command < NUM_COMMANDS; ++command)
-        if (!strcmp(sToken, c_asCommands[command]))
+        if( sToken == c_asCommands[command])
             break;
 
     // if there's no image only a subset of commands are valid
@@ -128,12 +130,13 @@ bool CScriptHandler::HandleCommand(const char* sCommand, TargaImage*& pImage)
         {
             if (pImage)
                 delete pImage;
-            char* sFilename = strtok(nullptr, c_sWhiteSpace);
+			string sFilename;
+			iss >> sFilename;
             bResult = (pImage = TargaImage::Load_Image(sFilename)) != nullptr;
 
             if (!bResult)
             {
-                if (!sFilename)
+                if (sFilename.empty())
                     cout << "Unable to load image:  " << endl;
                 else
                     cout << "Unable to load image:  " << sFilename << endl;
@@ -145,18 +148,21 @@ bool CScriptHandler::HandleCommand(const char* sCommand, TargaImage*& pImage)
 
         case SAVE:
         {
-            char* sFilename = strtok(nullptr, c_sWhiteSpace);
-            if (!sFilename)
+			string sFilename;
+			iss >> sFilename;
+            if (sFilename.empty())
                 cout << "No filename given." << endl;
 
-            bParsed = sFilename != nullptr;
+            bParsed = !sFilename.empty();
             bResult =  bParsed && pImage->Save_Image(sFilename);
             break;
         }// SAVE
 
         case RUN:
         {
-            bResult = HandleScriptFile(strtok(nullptr, c_sWhiteSpace), pImage);
+			string runcommand;
+			iss >> runcommand;
+            bResult = HandleScriptFile(runcommand.c_str(), pImage);
             break;
         }// RUN
 
@@ -234,8 +240,10 @@ bool CScriptHandler::HandleCommand(const char* sCommand, TargaImage*& pImage)
 
         case FILTER_GAUSS_N:
         {
-            char *sN = strtok(nullptr, c_sWhiteSpace);
-            int N = atoi(sN);
+			string sN;
+			iss >> sN;
+            
+            int N = atoi(sN.c_str());
             if (N % 2 != 1) {
                cout << "N \"" << N << "\" is not allowed; N must be an odd number." << endl;
                break;
@@ -277,8 +285,10 @@ bool CScriptHandler::HandleCommand(const char* sCommand, TargaImage*& pImage)
 
         case SCALE:
         {
-            char *sScale = strtok(nullptr, c_sWhiteSpace);
-            double scale = atof(sScale);
+			string sScale;
+			iss >> sScale;
+            
+            double scale = atof(sScale.c_str());
 
             if(scale <= 0)
             {
@@ -292,11 +302,12 @@ bool CScriptHandler::HandleCommand(const char* sCommand, TargaImage*& pImage)
 
         case COMP_OVER:
         {
-            char* sFilename = strtok(nullptr, c_sWhiteSpace);
+			string sFilename;
+			iss >> sFilename;
             TargaImage* pNewImage = TargaImage::Load_Image(sFilename);
             if (!pNewImage)
             {
-                if (sFilename)
+                if (!sFilename.empty())
                     cout << "Unable to load image:  " << sFilename << endl;
                 else
                     cout << "No filename given." << endl;
@@ -309,11 +320,12 @@ bool CScriptHandler::HandleCommand(const char* sCommand, TargaImage*& pImage)
 
         case COMP_IN:
         {
-            char* sFilename = strtok(nullptr, c_sWhiteSpace);
+			string sFilename;
+			iss >> sFilename;
             TargaImage* pNewImage = TargaImage::Load_Image(sFilename);
             if (!pNewImage)
             {
-                if (sFilename)
+                if (!sFilename.empty())
                     cout << "Unable to load image:  " << sFilename << endl;
                 else
                     cout << "No filename given." << endl;
@@ -327,11 +339,12 @@ bool CScriptHandler::HandleCommand(const char* sCommand, TargaImage*& pImage)
 
         case COMP_OUT:
         {
-            char* sFilename = strtok(nullptr, c_sWhiteSpace);
+			string sFilename;
+			iss >> sFilename;
             TargaImage* pNewImage = TargaImage::Load_Image(sFilename);
             if (!pNewImage)
             {
-                if (sFilename)
+                if (!sFilename.empty())
                     cout << "Unable to load image:  " << sFilename << endl;
                 else
                     cout << "No filename given." << endl;
@@ -345,11 +358,12 @@ bool CScriptHandler::HandleCommand(const char* sCommand, TargaImage*& pImage)
 
         case COMP_ATOP:
         {
-            char* sFilename = strtok(nullptr, c_sWhiteSpace);
+			string sFilename;
+			iss >> sFilename;
             TargaImage* pNewImage = TargaImage::Load_Image(sFilename);
             if (!pNewImage)
             {
-                if (sFilename)
+                if (!sFilename.empty())
                     cout << "Unable to load image:  " << sFilename << endl;
                 else
                     cout << "No filename given." << endl;
@@ -363,11 +377,12 @@ bool CScriptHandler::HandleCommand(const char* sCommand, TargaImage*& pImage)
 
         case COMP_XOR:
         {
-            char* sFilename = strtok(nullptr, c_sWhiteSpace);
+			string sFilename;
+			iss >> sFilename;
             TargaImage* pNewImage = TargaImage::Load_Image(sFilename);
             if (!pNewImage)
             {
-                if (sFilename)
+                if (!sFilename.empty())
                     cout << "Unable to load image:  " << sFilename << endl;
                 else
                     cout << "No filename given." << endl;
@@ -381,11 +396,12 @@ bool CScriptHandler::HandleCommand(const char* sCommand, TargaImage*& pImage)
 
         case DIFF:
         {
-            char* sFilename = strtok(nullptr, c_sWhiteSpace);
+			string sFilename;
+			iss >> sFilename;
             TargaImage* pNewImage = TargaImage::Load_Image(sFilename);
             if (!pNewImage)
             {
-                if (sFilename)
+                if (!sFilename.empty())
                     cout << "Unable to load image:  " << sFilename << endl;
                 else
                     cout << "Unable to load image:  " << endl;
@@ -399,10 +415,11 @@ bool CScriptHandler::HandleCommand(const char* sCommand, TargaImage*& pImage)
 
         case ROTATE:
         {
-            char *sAngle = strtok(nullptr, c_sWhiteSpace);
+			string sAngle;
+			iss >> sAngle;
             float angle;
 
-            if (!sAngle || !(angle = (float)atof(sAngle)))
+            if (sAngle.empty() || !(angle = (float)atof(sAngle.c_str())))
             {
                 cout << "Invalid rotation angle." << endl;
                 bResult = bParsed = false;
@@ -421,9 +438,7 @@ bool CScriptHandler::HandleCommand(const char* sCommand, TargaImage*& pImage)
             bParsed = false;
         }// default
     }// switch
-
-    delete[] sCommandLine;
-
+	
     return bParsed;
 }// HandleCommand
 
@@ -436,9 +451,9 @@ bool CScriptHandler::HandleCommand(const char* sCommand, TargaImage*& pImage)
 //  otherwise false is returned.
 //
 ///////////////////////////////////////////////////////////////////////////////
-bool CScriptHandler::HandleScriptFile(const char* sFilename, TargaImage*& pImage)
+bool CScriptHandler::HandleScriptFile(const string sFilename, TargaImage*& pImage)
 {
-    if (!sFilename)
+    if (sFilename.empty())
     {
         cout << "No filename given." << endl;
         return false;

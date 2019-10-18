@@ -19,6 +19,7 @@
 #include <string>
 #include <functional>
 #include <cmath>
+#include <valarray>
 
 class Stroke;
 class DistanceImage;

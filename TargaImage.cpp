@@ -25,6 +25,7 @@
 #include <valarray>
 #include <random>
 #include <map>
+#include <unordered_map>
 #include <functional>
 
 using namespace std;
@@ -358,7 +359,7 @@ bool TargaImage::Quant_Populosity()
     // my color_map step
     for( auto it = data.begin(); it < data.end(); it+=4 ){
         // Read in all colors and remove alpha
-        uint32_t c = *reinterpret_cast<uint32_t*>(it.base());
+        uint32_t c = *reinterpret_cast<uint32_t*>(it._Ptr);
         count_sort[c]++;
     }
     // This is all wrong
@@ -394,10 +395,10 @@ bool TargaImage::Quant_Populosity()
         color_map[cs.first] = nearest_color;
     });
     for( auto it = data.begin(); it < data.end(); it+=4 ){
-        if( color_map.count(*reinterpret_cast<uint32_t*>(it.base())) == 0 ){
+        if( color_map.count(*reinterpret_cast<uint32_t*>(it._Ptr)) == 0 ){
             cout << "Uh-oh, something went wrong, a color is missing" << endl;
         }
-        *reinterpret_cast<uint32_t*>(it.base()) = color_map[*reinterpret_cast<uint32_t*>(it.base())];
+        *reinterpret_cast<uint32_t*>(it._Ptr) = color_map[*reinterpret_cast<uint32_t*>(it._Ptr)];
     }
     // Now, for each pixel we calculate the distance
     return true;
@@ -436,9 +437,9 @@ bool TargaImage::Dither_Random()
     // We want to add a random amount from [-a,a], then apply the threshold
     // algorithm to it.
     this->To_Grayscale();
-    constexpr char a = 51; // An artistic value - should be close to [-0.2,0.2]
+    constexpr int32_t a = 51; // An artistic value - should be close to [-0.2,0.2]
     default_random_engine generator;
-    uniform_int_distribution<char> distribution(-a,a);
+    uniform_int_distribution<int32_t> distribution(-a,a);
     auto randint = bind(distribution,generator );
 
     transform_n_less_m<4,1>(data.begin(), data.end(), data.begin(), [&randint](auto c)->uchar{
@@ -478,7 +479,7 @@ bool TargaImage::Dither_FS()
 bool TargaImage::Dither_Bright()
 {
     // If the image is so large we can't hold its sum in a uint64_t
-    if( numeric_limits<uint64_t>::max()/(static_cast<uint>(_width)*8) < static_cast<uint>(_height) ){
+    if( numeric_limits<uint64_t>::max()/(static_cast<uint32_t>(_width)*8) < static_cast<uint32_t>(_height) ){
         cout << "Error: Image too large for uint64_t" << endl;
         return false;
     }
@@ -887,12 +888,12 @@ TargaImage* TargaImage::Reverse_Rows(void)
     if (data.empty())
         return nullptr;
 
-    for (uint i = 0 ; i < static_cast<uint>(_height) ; i++)
+    for (uint32_t i = 0 ; i < static_cast<uint32_t>(_height) ; i++)
     {
-        uint in_offset = (static_cast<uint>(_height) - i - 1) * static_cast<uint>(_width) * 4;
-        uint out_offset = i * static_cast<uint>(_width) * 4;
+        uint32_t in_offset = (static_cast<uint32_t>(_height) - i - 1) * static_cast<uint32_t>(_width) * 4;
+        uint32_t out_offset = i * static_cast<uint32_t>(_width) * 4;
 
-        for (uint j = 0 ; j < static_cast<uint>(_width) ; j++)
+        for (uint32_t j = 0 ; j < static_cast<uint32_t>(_width) ; j++)
         {
             dest[out_offset + j * 4 + RED]   = data[in_offset + j * 4 + RED];
             dest[out_offset + j * 4 + GREEN] = data[in_offset + j * 4 + GREEN];
