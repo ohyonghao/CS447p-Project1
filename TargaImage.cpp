@@ -78,7 +78,7 @@ void GaussMask(valarray<T> &matrix){
             }
         }else if( i < half ){
             for( size_t j = 0; j < size - i; ++j){
-                matrix[(i+1)*size - j - 1] = matrix[(i+half)*size + j];
+                matrix[(i+1)*size - j - 1] = matrix[(size-i-1)*size + j];
             }
         }else{
             for( size_t j = 0; j < half; ++j){
@@ -345,7 +345,7 @@ bool TargaImage::Quant_Populosity()
     };
 
 	auto To_RGB = [](auto it)->uint32_t {
-		return *(it + RED) << 24 | *(it + GREEN) << 16 | *(it + BLUE) << 8 | *(it + ALPHA);
+        return *(it + RED) << 24 | *(it + GREEN) << 16 | *(it + BLUE) << 8 | *(it + ALPHA);
 	};
     // We want to convert from 24bit to 8bit
 
