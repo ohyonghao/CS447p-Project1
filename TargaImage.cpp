@@ -110,6 +110,15 @@ void transform_step(IN1 first, IN1 last, IN2 second, OUT result, int N, BINOP op
         ++result; first+=N; second+=N;
     }
 }
+
+template<typename IN1, typename IN2, typename OUT, typename UNOP>
+void transform_step(IN1 first, IN1 last, OUT result, int N, UNOP op){
+    while( first != last ){
+        *result = op(*first);
+
+        ++result; first+=N;
+    }
+}
 ///////////////////////////////////////////////////////////////////////////////
 //
 //      Constructor.  Initialize member variables.
@@ -821,11 +830,24 @@ bool TargaImage::NPR_Paint()
 
     auto &canvas = data; // rename data for convenience
 
+    // Find color C
+    uint64_t r{0};
+    uint64_t g{0};
+    uint64_t b{0};
+    for( auto it = source.begin(); it != source.end(); it+=4 ){
+        r += *(it+RED);
+        g += *(it+GREEN);
+        b += *(it+BLUE);
+    }
+    r/=static_cast<uint64_t>(_width*_height);
+    g/=static_cast<uint64_t>(_width*_height);
+    b/=static_cast<uint64_t>(_width*_height);
     // Paint color such that colors are within MAXINT
-    transform_n_less_m<4,1>( canvas.begin(), canvas.end(), canvas.begin(), [](auto &/*c*/){
-        return 128u;
-    });
-
+    for(auto it = canvas.begin(); it != canvas.end(); it+=4){
+        *(it+RED)   = static_cast<uchar>(r);
+        *(it+GREEN) = static_cast<uchar>(g);
+        *(it+BLUE)  = static_cast<uchar>(b);
+    }
 
     // For each brush we want to run the Gaussian-blur function
     // using a construction with filter size of 2xRadius +1
@@ -881,7 +903,7 @@ void TargaImage::Paint_Layer(TargaImage &reference, uint32_t N){
                 areaError = accumulate(V.begin(), V.end(), areaError);
             });
             areaError/=(N*N);
-            if( areaError > 65.0){
+            if( areaError > 60.0){
                 // Find the max difference in region
                 double max_diff{numeric_limits<double>::min()};
                 size_t x_max{0};
@@ -891,6 +913,7 @@ void TargaImage::Paint_Layer(TargaImage &reference, uint32_t N){
                     auto local_max = max_element(V.begin(), V.end());
                     if( *local_max > max_diff ){
                         // Update maxes
+                        max_diff = *local_max;
                         x_max = std::distance(V.begin(), local_max );
                         y_max = y_count;
                     }
@@ -908,9 +931,9 @@ void TargaImage::Paint_Layer(TargaImage &reference, uint32_t N){
                 strokes.emplace_back(N, x_max, y_max, r, g, b, a );
             }
             for(auto&V: M_d){
-                ++V;
+                V+=static_cast<int32_t>(N);
             }
-        } cout << endl;
+        }
     }
     // Paint all strokes randomly.
 

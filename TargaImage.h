@@ -145,7 +145,8 @@ public:
     IT begin() {return first;}
     IT end() {return last;}
     range& operator++(){++first; ++last; return *this;}
-    range operator++(int){range orig{this}; ++first; ++last; return orig;}
+    const range operator++(int){range orig{this}; ++first; ++last; return orig;}
+    range& operator+=(int N){first+=N; last+=N; return *this;}
 };
 
 ///////////////////////////////////////////////////////////////////////////////
