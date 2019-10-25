@@ -127,6 +127,28 @@ public:
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+//      My range class
+//
+///////////////////////////////////////////////////////////////////////////////
+
+template <typename IT>
+class range{
+private:
+    IT first;
+    IT last;
+public:
+    range(IT first,IT last):first{first}, last{last}{}
+    range(range&& m):first{m.first},last{m.last}{}
+    range(const range& m) = default;
+    range& operator=(const range& m) = default;
+    IT begin() {return first;}
+    IT end() {return last;}
+    range& operator++(){++first; ++last; return *this;}
+    range operator++(int){range orig{this}; ++first; ++last; return orig;}
+};
+
+///////////////////////////////////////////////////////////////////////////////
+//
 //      Apply a given matrix to the image
 //
 ///////////////////////////////////////////////////////////////////////////////
