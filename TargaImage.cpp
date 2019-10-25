@@ -677,16 +677,24 @@ bool TargaImage::Comp_Out(const TargaImage& pImage)
 //  operation.
 //
 ///////////////////////////////////////////////////////////////////////////////
-bool TargaImage::Comp_Atop(TargaImage* pImage)
+bool TargaImage::Comp_Atop(const TargaImage& pImage)
 {
-    if (_width != pImage->_width || _height != pImage->_height)
+    if (_width != pImage._width || _height != pImage._height)
     {
-        cout << "Comp_Atop: Images not the same size\n";
+        cout <<  "Comp_Atop: Images not the same size\n";
         return false;
     }
 
-    ClearToBlack();
-    return false;
+
+    apply_step( data.begin(), data.end(), pImage.data.begin(), 4, [](auto &lhs, auto &rhs){
+        double alpha_f = *(&lhs+ALPHA)/255.0;
+        double alpha_g = *(&rhs+ALPHA)/255.0;
+        for(auto ch: {RED,GREEN,BLUE,ALPHA}){
+            *(&lhs+ch) = static_cast<uchar>(*(&lhs+ch)*(alpha_g) + *(&rhs+ch)*(1.0-alpha_f));
+        }
+
+    });
+    return true;
 }// Comp_Atop
 
 
