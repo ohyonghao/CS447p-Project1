@@ -354,7 +354,7 @@ bool CScriptHandler::HandleCommand(const string sCommand, TargaImage*& pImage)
 
                 bParsed = false;
             }// if
-            bResult = pNewImage && pImage->Comp_Out(pNewImage);
+            bResult = pNewImage && pImage->Comp_Out(*pNewImage);
             delete pNewImage;
             break;
         }// COMP_OUT

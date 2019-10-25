@@ -64,7 +64,7 @@ class TargaImage
 
         bool Comp_Over(const TargaImage &pImage);
         bool Comp_In(const TargaImage& pImage);
-        bool Comp_Out(TargaImage* pImage);
+        bool Comp_Out(const TargaImage &pImage);
         bool Comp_Atop(TargaImage* pImage);
         bool Comp_Xor(TargaImage* pImage);
 
