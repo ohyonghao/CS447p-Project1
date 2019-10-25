@@ -830,24 +830,8 @@ bool TargaImage::NPR_Paint()
 
     auto &canvas = data; // rename data for convenience
 
-    // Find color C
-    uint64_t r{0};
-    uint64_t g{0};
-    uint64_t b{0};
-    for( auto it = source.begin(); it != source.end(); it+=4 ){
-        r += *(it+RED);
-        g += *(it+GREEN);
-        b += *(it+BLUE);
-    }
-    r/=static_cast<uint64_t>(_width*_height);
-    g/=static_cast<uint64_t>(_width*_height);
-    b/=static_cast<uint64_t>(_width*_height);
-    // Paint color such that colors are within MAXINT
-    for(auto it = canvas.begin(); it != canvas.end(); it+=4){
-        *(it+RED)   = static_cast<uchar>(r);
-        *(it+GREEN) = static_cast<uchar>(g);
-        *(it+BLUE)  = static_cast<uchar>(b);
-    }
+    // Choose color to be 0
+    transform_n_less_m<4,1>(canvas.begin(), canvas.end(), canvas.begin(), [](auto& /*c*/){return 0u;});
 
     // For each brush we want to run the Gaussian-blur function
     // using a construction with filter size of 2xRadius +1
@@ -903,7 +887,7 @@ void TargaImage::Paint_Layer(TargaImage &reference, uint32_t N){
                 areaError = accumulate(V.begin(), V.end(), areaError);
             });
             areaError/=(N*N);
-            if( areaError > 60.0){
+            if( areaError > 70.0){
                 // Find the max difference in region
                 double max_diff{numeric_limits<double>::min()};
                 size_t x_max{0};
