@@ -22,39 +22,39 @@
 using namespace std;
 
 // constants
-const int       c_maxLineLength         = 1000;                         // maximum length of a command in a script
-const char      c_sWhiteSpace[]         = " \t\n\r"; 
-const vector<string>      c_asCommands        = { "load",                     // valid commands
-                                            "save",
-                                            "run",
-                                            "gray",
-                                            "quant-unif",
-                                            "quant-pop",
-                                            "dither-thresh",
-                                            "dither-rand",
-                                            "dither-fs",
-                                            "dither-bright",
-                                            "dither-cluster",
-					    "dither-pattern",
-					    "dither-color",
-                                            "filter-box",
-                                            "filter-bartlett",
-                                            "filter-gauss",
-                                            "filter-gauss-n",
-                                            "filter-edge",
-                                            "filter-enhance",
-                                            "npr-paint",
-                                            "half",
-                                            "double",
-                                            "scale",
-                                            "comp-over",
-                                            "comp-in",
-                                            "comp-out",
-                                            "comp-atop",
-                                            "comp-xor",
-                                            "diff",
-                                            "rotate"
-                                          };
+const int       c_maxLineLength         = 1000;
+const vector<string>      c_asCommands  = {
+                        "load",                     // valid commands
+                        "save",
+                        "run",
+                        "gray",
+                        "quant-unif",
+                        "quant-pop",
+                        "dither-thresh",
+                        "dither-rand",
+                        "dither-fs",
+                        "dither-bright",
+                        "dither-cluster",
+                        "dither-pattern",
+                        "dither-color",
+                        "filter-box",
+                        "filter-bartlett",
+                        "filter-gauss",
+                        "filter-gauss-n",
+                        "filter-edge",
+                        "filter-enhance",
+                        "npr-paint",
+                        "half",
+                        "double",
+                        "scale",
+                        "comp-over",
+                        "comp-in",
+                        "comp-out",
+                        "comp-atop",
+                        "comp-xor",
+                        "diff",
+                        "rotate"
+                      };
 
 enum ECommands          // command ids
 {
@@ -471,12 +471,11 @@ bool CScriptHandler::HandleScriptFile(const string sFilename, TargaImage*& pImag
     }// if
 
     bool bResult = true;
-    char sLine[c_maxLineLength + 1];
+    string sLine;
     while (!inFile.eof() && bResult)
     {
-        inFile.getline(sLine, c_maxLineLength);
-
-        if (!inFile.eof())
+        getline(inFile, sLine);
+        if (!inFile.eof() && sLine.size() > 1)
             bResult = HandleCommand(sLine, pImage);
     }// while
 

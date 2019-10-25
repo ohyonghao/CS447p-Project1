@@ -294,9 +294,9 @@ bool TargaImage::To_Grayscale()
     for( auto it = data.begin(); it < data.end(); it+=4){
         this->RGBA_To_RGB(it, it); // overwriting itself
         uchar y = static_cast<uchar>(
-                  *(it+RED)   * 0.299
-                + *(it+GREEN) * 0.587
-                + *(it+BLUE)  * 0.114);
+                  static_cast<double>(*(it+RED))   * 0.299
+                + static_cast<double>(*(it+GREEN)) * 0.587
+                + static_cast<double>(*(it+BLUE))  * 0.114);
         *(it+RED)   = y;
         *(it+GREEN) = y;
         *(it+BLUE)  = y;
@@ -319,7 +319,7 @@ bool TargaImage::Quant_Uniform(uchar r, uchar g, uchar b){
     transform(data.begin(),data.end(),data.begin(),[=,&count](auto c){
         ++count;
         auto quant = [c](auto shift)->uchar{
-            return static_cast<uchar>(((c >> (8 - shift) ) << (8 - shift)) + (1<<(8 - (shift + 1))));
+            return static_cast<uchar>(((c >> (8 - shift) ) << (8 - shift)));// + (1<<(8 - (shift + 1))));
         };
         switch( count ){
         case RED:
