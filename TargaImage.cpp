@@ -28,6 +28,7 @@
 #include <unordered_map>
 #include <functional>
 #include <chrono>
+#include <numeric>
 
 using namespace std;
 
