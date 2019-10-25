@@ -27,6 +27,7 @@
 #include <map>
 #include <unordered_map>
 #include <functional>
+#include <chrono>
 
 using namespace std;
 
@@ -921,7 +922,7 @@ void TargaImage::Paint_Layer(TargaImage &reference, uint32_t N){
     }
     // Paint all strokes randomly.
 
-    random_shuffle(strokes.begin(), strokes.end());
+    shuffle(strokes.begin(), strokes.end(),default_random_engine(chrono::system_clock::now().time_since_epoch().count()));
 
     for(auto &s: strokes){
         Paint_Stroke(s);
