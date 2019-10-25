@@ -548,8 +548,23 @@ bool TargaImage::Dither_Bright()
 ///////////////////////////////////////////////////////////////////////////////
 bool TargaImage::Dither_Cluster()
 {
-    ClearToBlack();
-    return false;
+    vector<vector<double> > thresh{{0.75,   0.375,  0.625,  0.25},
+                                   {0.0625, 1.0,    0.875,  0.4375},
+                                   {0.5,    0.8125, 0.9375, 0.1250},
+                                   {0.1875, 0.5625, 0.3125, 0.6875}};
+    To_Grayscale();
+
+    for( size_t j = 0; j < static_cast<size_t>(_height); ++j ){
+        for( size_t i = 0; i < static_cast<size_t>(_width); ++i ){
+            auto on = data[index(i,j)] >= thresh[j%4][i%4]*255.0;
+            data[index(i,j)+RED]   = on ? 255 : 0;
+            data[index(i,j)+GREEN] = on ? 255 : 0;
+            data[index(i,j)+BLUE]  = on ? 255 : 0;
+
+            data[index(i,j)+ALPHA] = 255;
+        }
+    }
+    return true;
 }// Dither_Cluster
 
 
