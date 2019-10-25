@@ -113,7 +113,7 @@ void transform_step(IN1 first, IN1 last, IN2 second, OUT result, int N, BINOP op
     }
 }
 
-template<typename IN1, typename IN2, typename OUT, typename UNOP>
+template<typename IN1, typename OUT, typename UNOP>
 void transform_step(IN1 first, IN1 last, OUT result, int N, UNOP op){
     while( first != last ){
         *result = op(*first);
@@ -121,6 +121,16 @@ void transform_step(IN1 first, IN1 last, OUT result, int N, UNOP op){
         ++result; first+=N;
     }
 }
+
+template<typename IN1, typename IN2, typename BINOP>
+void apply_step(IN1 first, IN1 last, IN2 second, int N, BINOP op){
+    while( first != last ){
+        op(*first,*second);
+
+        first+=N; second+=N;
+    }
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 //      Constructor.  Initialize member variables.
@@ -588,16 +598,24 @@ bool TargaImage::Dither_Color()
 //  operation.
 //
 ///////////////////////////////////////////////////////////////////////////////
-bool TargaImage::Comp_Over(TargaImage* pImage)
+bool TargaImage::Comp_Over(const TargaImage& pImage)
 {
-    if (_width != pImage->_width || _height != pImage->_height)
+    if (_width != pImage._width || _height != pImage._height)
     {
         cout <<  "Comp_Over: Images not the same size\n";
         return false;
     }
 
-    ClearToBlack();
-    return false;
+
+    apply_step( data.begin(), data.end(), pImage.data.begin(), 4, [](auto &lhs, auto &rhs){
+        double alpha = *(&lhs+ALPHA)/255.0;
+        *(&lhs+RED)   += static_cast<uchar>(*(&rhs+RED)  *(1.0-alpha));
+        *(&lhs+GREEN) += static_cast<uchar>(*(&rhs+GREEN)*(1.0-alpha));
+        *(&lhs+BLUE)  += static_cast<uchar>(*(&rhs+BLUE) *(1.0-alpha));
+        *(&lhs+ALPHA) += static_cast<uchar>(*(&rhs+ALPHA)*(1.0-alpha));
+
+    });
+    return true;
 }// Comp_Over
 
 

@@ -316,7 +316,7 @@ bool CScriptHandler::HandleCommand(const string sCommand, TargaImage*& pImage)
                     cout << "No filename given." << endl;
                 bParsed = false;
             }// if
-            bResult = pNewImage && pImage->Comp_Over(pNewImage);
+            bResult = pNewImage && pImage->Comp_Over(*pNewImage);
             delete pNewImage;
             break;
         }// COMP_OVER
