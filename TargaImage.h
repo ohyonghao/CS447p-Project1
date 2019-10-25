@@ -66,7 +66,7 @@ class TargaImage
         bool Comp_In(const TargaImage& pImage);
         bool Comp_Out(const TargaImage &pImage);
         bool Comp_Atop(const TargaImage &pImage);
-        bool Comp_Xor(TargaImage* pImage);
+        bool Comp_Xor(const TargaImage &pImage);
 
         bool Difference(const TargaImage& pImage);
         bool Difference(const std::vector<uchar> &remove );
