@@ -51,6 +51,10 @@ void GaussMask(valarray<T> &matrix){
     if( size == 0 || size * size != matrix.size() ){
         return;
     }
+    if( size == 1 ){
+        matrix[0] = 1;
+        return;
+    }
 
     // Calculate sizeth row of pascals triangle
     matrix[0] = 1;
@@ -741,12 +745,13 @@ bool TargaImage::Filter_Gaussian()
 
 bool TargaImage::Filter_Gaussian_N( unsigned int N )
 {
-    valarray<uint32_t> matrix(N*N);
+    if( N == 1 ) return true;
+    valarray<uint64_t> matrix(N*N);
     GaussMask(matrix);
 
     // The division is 1/(2^{(n-1)*2}
     // That gets us 3=1/16, 5=1/256, 7=1/1024, etc.
-    return Apply_Mask<uint32_t,uint32_t>(matrix, [N](auto c){return c >> ((N-1)*2);});
+    return Apply_Mask<uint64_t,uint64_t>(matrix, [N](auto c){return c >> ((N-1)*2);});
 }// Filter_Gaussian_N
 
 
