@@ -102,7 +102,14 @@ void transform_n_less_m(IN first, IN last, OUT result, UNOP op){
         result+=N; first+=N;
     }
 }
+template<typename IN1, typename IN2, typename OUT, typename BINOP>
+void transform_step(IN1 first, IN1 last, IN2 second, OUT result, int N, BINOP op){
+    while( first != last ){
+        *result = op(*first,*second);
 
+        ++result; first+=N; second+=N;
+    }
+}
 ///////////////////////////////////////////////////////////////////////////////
 //
 //      Constructor.  Initialize member variables.
