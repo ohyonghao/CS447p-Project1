@@ -896,7 +896,7 @@ bool TargaImage::NPR_Paint()
     auto &canvas = data; // rename data for convenience
 
     // Choose color to be 0
-    transform_n_less_m<4,1>(canvas.begin(), canvas.end(), canvas.begin(), [](auto& /*c*/){return 0u;});
+    //transform_n_less_m<4,1>(canvas.begin(), canvas.end(), canvas.begin(), [](auto& /*c*/){return 0u;});
 
     // For each brush we want to run the Gaussian-blur function
     // using a construction with filter size of 2xRadius +1
@@ -952,7 +952,7 @@ void TargaImage::Paint_Layer(TargaImage &reference, uint32_t N){
                 areaError = accumulate(V.begin(), V.end(), areaError);
             });
             areaError/=(N*N);
-            if( areaError > 70.0){
+            if( areaError > 25.0){
                 // Find the max difference in region
                 double max_diff{numeric_limits<double>::min()};
                 size_t x_max{0};
