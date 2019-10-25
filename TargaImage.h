@@ -99,6 +99,7 @@ class TargaImage
 	// Draws a filled circle according to the stroke data
         void Paint_Stroke(const Stroke& s);
 
+        void Paint_Layer( TargaImage& reference ,uint32_t N );
     // members
     private:
         int		_width;	        // width of the image in pixels

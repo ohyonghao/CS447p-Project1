@@ -813,11 +813,114 @@ bool TargaImage::Filter_Enhance()
 ///////////////////////////////////////////////////////////////////////////////
 bool TargaImage::NPR_Paint()
 {
-    ClearToBlack();
-    return false;
+    // Prepare our canvas
+    vector<uchar> source(data.size(),255u);
+
+    // Swap these around so that our data is in reference
+    swap(data, source);
+
+    auto &canvas = data; // rename data for convenience
+
+    // Paint color such that colors are within MAXINT
+    transform_n_less_m<4,1>( canvas.begin(), canvas.end(), canvas.begin(), [](auto &/*c*/){
+        return 128u;
+    });
+
+
+    // For each brush we want to run the Gaussian-blur function
+    // using a construction with filter size of 2xRadius +1
+    // We want to use the radius 7, 3, 1
+
+    for(auto R: {7u,3u,1u}){
+        TargaImage reference{_width,_height,source};
+        reference.Filter_Gaussian_N(R*2u+1u);
+        Paint_Layer(reference, R);
+    }
+
+
+    return true;
 }
 
+void TargaImage::Paint_Layer(TargaImage &reference, uint32_t N){
+    auto& canvas = data;
+    vector<Stroke> strokes;
 
+    // Calculate the Euclidean Distance
+    vector<double> diff(canvas.size()>>2);
+
+    // Takes pairs of start and end
+    vector<range<decltype (diff.begin())> > M_d(N,range<decltype (diff.begin())>(diff.begin(),diff.begin()));
+
+    auto Start_Row = [this](auto &C, auto &V, size_t row, size_t N){
+        for( size_t i = 0; i < N; ++i){
+            auto first = C.begin()+static_cast<int32_t>(row*(static_cast<size_t>(_width)+i));
+            auto last  = C.begin()+static_cast<int32_t>(row*(static_cast<size_t>(_width)+i)+N);
+
+            auto rv = range<decltype(C.begin())>(first,last);
+            V[i] = rv;
+        }
+    };
+
+    transform_step(canvas.begin(), canvas.end(), reference.data.begin(), diff.begin(), 4,
+              [](auto &lhs, auto &rhs){
+        return std::sqrt((
+                 std::pow(static_cast<double>(*(&lhs+RED) - *(&rhs+RED)),2) +
+                 std::pow(static_cast<double>(*(&lhs+GREEN) - *(&rhs+GREEN)),2) +
+                 std::pow(static_cast<double>(*(&lhs+BLUE) - *(&rhs+BLUE)),2)
+                 ));
+    });
+
+    size_t x_fitted = static_cast<size_t>(_width) - static_cast<size_t>(_width)%N - N-1;
+    size_t y_fitted = static_cast<size_t>(_height) - static_cast<size_t>(_height)%N - N-1;
+    for( size_t y = 0; y < y_fitted; y+=N){
+        Start_Row(diff, M_d,y, N);
+        for( size_t x = 0; x < x_fitted; x+=N ){
+            // find error as sum of Difference over region
+            double areaError{0.0}; //sum(D_ij for ij in M);
+            for_each(M_d.begin(),M_d.end(), [&areaError](auto V){
+                areaError = accumulate(V.begin(), V.end(), areaError);
+            });
+            areaError/=(N*N);
+            if( areaError > 65.0){
+                // Find the max difference in region
+                double max_diff{numeric_limits<double>::min()};
+                size_t x_max{0};
+                size_t y_max{0};
+                size_t y_count{0};
+                for_each(M_d.begin(), M_d.end(), [&](auto V){
+                    auto local_max = max_element(V.begin(), V.end());
+                    if( *local_max > max_diff ){
+                        // Update maxes
+                        x_max = std::distance(V.begin(), local_max );
+                        y_max = y_count;
+                    }
+                    ++y_count;
+                });
+                // Translate to canvas coordinates
+                x_max += x;
+                y_max += y;
+                // Make a stroke
+
+                auto r = reference.data[index(x_max,y_max)+RED];
+                auto g = reference.data[index(x_max,y_max)+GREEN];
+                auto b = reference.data[index(x_max,y_max)+BLUE];
+                auto a = reference.data[index(x_max,y_max)+ALPHA];
+                strokes.emplace_back(N, x_max, y_max, r, g, b, a );
+            }
+            for(auto&V: M_d){
+                ++V;
+            }
+        } cout << endl;
+    }
+    // Paint all strokes randomly.
+
+    random_shuffle(strokes.begin(), strokes.end());
+
+    for(auto &s: strokes){
+        Paint_Stroke(s);
+    }
+
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 //
