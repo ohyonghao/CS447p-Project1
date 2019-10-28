@@ -1,0 +1,163 @@
+load img/colors-for-bw.tga
+gray
+save img/rendered/colors-for-bw-gray.tga
+
+load img/church.tga
+quant-unif
+save img/rendered/church-quant-unif.tga
+
+load img/wiz.tga
+quant-unif
+save img/rendered/wiz-quant-unif.tga
+
+load img/church.tga
+quant-pop
+save img/rendered/church-quant-pop.tga
+
+load img/wiz.tga
+quant-pop
+save img/rendered/wiz-quant-pop.tga
+
+load img/church.tga
+dither-thresh
+save img/rendered/church-dither-thresh.tga
+
+load img/church.tga
+dither-bright
+save img/rendered/church-dither-bright.tga
+
+load img/church.tga
+dither-rand
+save img/rendered/church-dither-rand.tga
+
+
+load img/church.tga
+dither-cluster
+save img/rendered/church-dither-cluster.tga
+
+load img/church.tga
+dither-fs
+save img/rendered/church-dither-fs.tga
+
+
+
+load img/church.tga
+filter-box
+save img/rendered/church-filter-box.tga
+
+load img/checkers.tga
+filter-box
+save img/rendered/checkers-filter-box.tga
+
+load img/church.tga
+filter-bartlett
+save img/rendered/church-filter-bartlett.tga
+
+load img/checkers.tga
+filter-bartlett
+save img/rendered/checkers-filter-bartlett.tga
+
+load img/church.tga
+filter-gauss
+save img/rendered/church-filter-gauss.tga
+
+load img/checkers.tga
+filter-gauss
+save img/rendered/checkers-filter-gauss.tga
+
+load img/church.tga
+filter-gauss-n 9
+save img/rendered/church-filter-gauss-n.tga
+
+load img/checkers.tga
+filter-gauss-n 11
+save img/rendered/checkers-filter-gauss-n.tga
+
+load img/church.tga
+filter-edge
+save img/rendered/church-filter-edge.tga
+
+load img/checkers.tga
+filter-edge
+save img/rendered/checkers-filter-edge.tga
+
+load img/gray-checkers.tga
+filter-edge
+save img/rendered/gray-checkers-filter-edge.tga
+
+
+
+load img/church.tga
+half
+save img/rendered/church-half.tga
+
+load img/checkers.tga
+half
+save img/rendered/checkers-half.tga
+
+load img/church-small.tga
+double
+save img/rendered/church-small-double.tga
+
+load img/checkers-small.tga
+double
+save img/rendered/checkers-small-double.tga
+
+load img/church.tga
+scale 0.8
+save img/rendered/church-scale.tga
+
+load img/checkers.tga
+scale 1.5
+save img/rendered/checkers-scale.tga
+
+load img/church.tga
+rotate 30
+save img/rendered/church-rotate.tga
+
+load img/checkers.tga
+rotate 75
+save img/rendered/checkers-rotate.tga
+
+load img/zcolorcheck.tga
+comp-over img/zred.tga
+save img/rendered/zcolorcheck-comp-over.tga
+
+load img/zcolorcheck.tga
+comp-in img/zred.tga
+save img/rendered/zcolorcheck-comp-in.tga
+
+load img/zcolorcheck.tga
+comp-out img/zred.tga
+save img/rendered/zcolorcheck-comp-out.tga
+
+load img/zcolorcheck.tga
+comp-atop img/zred.tga
+save img/rendered/zcolorcheck-comp-atop.tga
+
+load img/zcolorcheck.tga
+comp-xor img/zred.tga
+save img/rendered/zcolorcheck-comp-xor.tga
+
+load img/church.tga
+npr-paint
+save img/rendered/church-npr-paint.tga
+
+load img/wiz.tga
+npr-paint
+save img/rendered/wiz-npr-paint.tga
+
+
+load img/church.tga
+filter-enhance
+save img/rendered/church-filter-enhance.tga
+
+load img/checkers.tga
+filter-enhance
+save img/rendered/checkers-filter-enhance.tga
+
+load img/gray-checkers.tga
+filter-enhance
+save img/rendered/gray-checkers-filter-enhance.tga
+
+end 
