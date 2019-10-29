@@ -62,12 +62,12 @@ inline float DegreesToRadians(float angle)
 //      Functor to delete an object.
 //
 ///////////////////////////////////////////////////////////////////////////////
-template<class T> struct FDelete : public std::unary_function<T, void>
+/*template<class T> struct FDelete : public std::unary_function<T, void>
 {
     void operator ()(T object)
     {
         delete object;
     }// operator ()
 };// FDelete
-
+*/
 
