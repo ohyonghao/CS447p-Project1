@@ -18,7 +18,7 @@
 
 #include <FL/Fl.H>
 #include <FL/Fl_Window.H>
-#include <string>
+#include <string.h>
 #include <iostream>
 #include <vector>
 #include "TargaImage.h"
@@ -32,7 +32,7 @@ const char      c_sNames[]          = "-names";             // display student n
 const char      c_sHeadless[]       = "-headless";          // headless command line switch
 
 // globals
-string  vsStudentNames;
+std::vector<char*>  vsStudentNames;
 
 
 
@@ -44,7 +44,7 @@ string  vsStudentNames;
 void MakeNames()
 {
     // ************ ADD YOUR NAME HERE ****************************************
-    vsStudentNames = "David Post";
+    vsStudentNames.push_back(string("David Post").data());
 }// MakeNames
 
 
@@ -55,7 +55,8 @@ void MakeNames()
 ///////////////////////////////////////////////////////////////////////////////
 void DisplayNames()
 {
-    cout << vsStudentNames << endl;
+    for (std::vector<char*>::iterator i = vsStudentNames.begin(); i != vsStudentNames.end(); ++i)
+        cout << *i << endl;
 }// DisplayNames
 
 
@@ -64,7 +65,7 @@ void DisplayNames()
 //      Argument processing callback. Does nothing at this point.
 //
 ///////////////////////////////////////////////////////////////////////////////
-static int Arg_Callback(int /*argc*/, char ** /*argv[]*/, int &/*i*/)
+static int Arg_Callback(int /*argc*/, char ** /*argv*/, int & /*i*/)
 {
     return 0;
 }// Arg_Callback
@@ -127,7 +128,8 @@ int main(int argc, char *argv[])
         Fl_Window   window(350, 100, "CS447 Project 1");
         Fl::visual(FL_RGB);
         window.begin();
-            ImageWidget* pWidget = new ImageWidget(0, 0, 350, 100, "Image");
+            string s_image = "Image";
+            ImageWidget* pWidget = new ImageWidget(0, 0, 350, 100, s_image.data());
             window.add(pWidget);
         window.end();
 

@@ -598,16 +598,16 @@ bool TargaImage::Dither_Color()
 //  operation.
 //
 ///////////////////////////////////////////////////////////////////////////////
-bool TargaImage::Comp_Over(const TargaImage& pImage)
+bool TargaImage::Comp_Over(const TargaImage* pImage)
 {
-    if (_width != pImage._width || _height != pImage._height)
+    if (_width != pImage->_width || _height != pImage->_height)
     {
         cout <<  "Comp_Over: Images not the same size\n";
         return false;
     }
 
 
-    apply_step( data.begin(), data.end(), pImage.data.begin(), 4, [](auto &lhs, auto &rhs){
+    apply_step( data.begin(), data.end(), pImage->data.begin(), 4, [](auto &lhs, auto &rhs){
         double alpha = *(&lhs+ALPHA)/255.0;
         *(&lhs+RED)   += static_cast<uchar>(*(&rhs+RED)  *(1.0-alpha));
         *(&lhs+GREEN) += static_cast<uchar>(*(&rhs+GREEN)*(1.0-alpha));
@@ -625,16 +625,16 @@ bool TargaImage::Comp_Over(const TargaImage& pImage)
 //  details.  Return success of operation.
 //
 ///////////////////////////////////////////////////////////////////////////////
-bool TargaImage::Comp_In(const TargaImage& pImage)
+bool TargaImage::Comp_In(const TargaImage* pImage)
 {
-    if (_width != pImage._width || _height != pImage._height)
+    if (_width != pImage->_width || _height != pImage->_height)
     {
         cout <<  "Comp_In: Images not the same size\n";
         return false;
     }
 
 
-    apply_step( data.begin(), data.end(), pImage.data.begin(), 4, [](auto &lhs, auto &rhs){
+    apply_step( data.begin(), data.end(), pImage->data.begin(), 4, [](auto &lhs, auto &rhs){
         double alpha = *(&rhs+ALPHA)/255.0;
         for(auto ch: {RED,GREEN,BLUE,ALPHA}){
             *(&lhs+ch) = static_cast<uchar>(*(&lhs+ch)*alpha);
@@ -651,16 +651,16 @@ bool TargaImage::Comp_In(const TargaImage& pImage)
 //  details.  Return success of operation.
 //
 ///////////////////////////////////////////////////////////////////////////////
-bool TargaImage::Comp_Out(const TargaImage& pImage)
+bool TargaImage::Comp_Out(const TargaImage* pImage)
 {
-    if (_width != pImage._width || _height != pImage._height)
+    if (_width != pImage->_width || _height != pImage->_height)
     {
         cout <<  "Comp_Out: Images not the same size\n";
         return false;
     }
 
 
-    apply_step( data.begin(), data.end(), pImage.data.begin(), 4, [](auto &lhs, auto &rhs){
+    apply_step( data.begin(), data.end(), pImage->data.begin(), 4, [](auto &lhs, auto &rhs){
         double alpha = *(&rhs+ALPHA)/255.0;
         for(auto ch: {RED,GREEN,BLUE,ALPHA}){
             *(&lhs+ch) = static_cast<uchar>(*(&lhs+ch)*(1.0-alpha));
@@ -677,16 +677,16 @@ bool TargaImage::Comp_Out(const TargaImage& pImage)
 //  operation.
 //
 ///////////////////////////////////////////////////////////////////////////////
-bool TargaImage::Comp_Atop(const TargaImage& pImage)
+bool TargaImage::Comp_Atop(const TargaImage* pImage)
 {
-    if (_width != pImage._width || _height != pImage._height)
+    if (_width != pImage->_width || _height != pImage->_height)
     {
         cout <<  "Comp_Atop: Images not the same size\n";
         return false;
     }
 
 
-    apply_step( data.begin(), data.end(), pImage.data.begin(), 4, [](auto &lhs, auto &rhs){
+    apply_step( data.begin(), data.end(), pImage->data.begin(), 4, [](auto &lhs, auto &rhs){
         double alpha_f = *(&lhs+ALPHA)/255.0;
         double alpha_g = *(&rhs+ALPHA)/255.0;
         for(auto ch: {RED,GREEN,BLUE,ALPHA}){
@@ -704,16 +704,16 @@ bool TargaImage::Comp_Atop(const TargaImage& pImage)
 //  success of operation.
 //
 ///////////////////////////////////////////////////////////////////////////////
-bool TargaImage::Comp_Xor(const TargaImage& pImage)
+bool TargaImage::Comp_Xor(const TargaImage* pImage)
 {
-    if (_width != pImage._width || _height != pImage._height)
+    if (_width != pImage->_width || _height != pImage->_height)
     {
         cout <<  "Comp_Xor: Images not the same size\n";
         return false;
     }
 
 
-    apply_step( data.begin(), data.end(), pImage.data.begin(), 4, [](auto &lhs, auto &rhs){
+    apply_step( data.begin(), data.end(), pImage->data.begin(), 4, [](auto &lhs, auto &rhs){
         double alpha_f = *(&lhs+ALPHA)/255.0;
         double alpha_g = *(&rhs+ALPHA)/255.0;
         for(auto ch: {RED,GREEN,BLUE,ALPHA}){
@@ -732,15 +732,15 @@ bool TargaImage::Comp_Xor(const TargaImage& pImage)
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-bool TargaImage::Difference(const TargaImage& pImage)
+bool TargaImage::Difference(const TargaImage* pImage)
 {
-    if (_width != pImage._width || _height != pImage._height)
+    if (_width != pImage->_width || _height != pImage->_height)
     {
         cout << "Difference: Images not the same size\n";
         return false;
     }// if
 
-    return Difference(pImage.data);
+    return Difference(pImage->data);
 }
 bool TargaImage::Difference(const vector<uchar>& remove )
 {

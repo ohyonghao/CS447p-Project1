@@ -10,9 +10,9 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 
-#ifndef C_SCRIPT_HANDLER
-#define C_SCRIPT_HANDLER
-#include <string>
+#ifndef _C_SCRIPT_HANDLER
+#define _C_SCRIPT_HANDLER
+
 class TargaImage;
 
 class CScriptHandler
@@ -26,7 +26,7 @@ class CScriptHandler
         //  returned.  Otherwise return true.
         //  
         ///////////////////////////////////////////////////////////////////////////////
-        static bool HandleCommand(const std::string sCommand, TargaImage*& pImage);
+        static bool HandleCommand(const char* sCommand, TargaImage*& pImage);
 
         ///////////////////////////////////////////////////////////////////////////////
         //
@@ -36,7 +36,7 @@ class CScriptHandler
         //  otherwise false is returned.
         //
         ///////////////////////////////////////////////////////////////////////////////
-        static bool HandleScriptFile(const std::string sFilename, TargaImage*& pImage);
+        static bool HandleScriptFile(const char* sFilename, TargaImage*& pImage);
 };// CScriptHandler
 
 #endif // _C_SCRIPT_HANDLER

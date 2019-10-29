@@ -62,14 +62,14 @@ class TargaImage
         bool Dither_Cluster();
         bool Dither_Color();
 
-        bool Comp_Over(const TargaImage &pImage);
-        bool Comp_In(const TargaImage& pImage);
-        bool Comp_Out(const TargaImage &pImage);
-        bool Comp_Atop(const TargaImage &pImage);
-        bool Comp_Xor(const TargaImage &pImage);
+        bool Comp_Over(const TargaImage *pImage);
+        bool Comp_In(const TargaImage* pImage);
+        bool Comp_Out(const TargaImage* pImage);
+        bool Comp_Atop(const TargaImage* pImage);
+        bool Comp_Xor(const TargaImage* pImage);
 
-        bool Difference(const TargaImage& pImage);
-        bool Difference(const std::vector<uchar> &remove );
+        bool Difference(const TargaImage* pImage);
+        bool Difference(const std::vector<uchar>& remove );
 
         template <typename T, typename S>
         bool Apply_Mask(const std::valarray<T>&, std::function<S(S)>);

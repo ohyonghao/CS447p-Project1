@@ -38,8 +38,8 @@ const int   c_minWindowHeight       = 100;                                      
 //      Constructor.  Add the buttons to the window.
 //
 ///////////////////////////////////////////////////////////////////////////////
-ImageWidget::ImageWidget(int x, int y, int w, int h, const string &title) :
-    Fl_Widget(x, y, Max(w, c_minWindowWidth), Max(h, c_minWindowHeight), title.data()),
+ImageWidget::ImageWidget(int x, int y, int w, int h, char* title) :
+    Fl_Widget(x, y, Max(w, c_minWindowWidth), Max(h, c_minWindowHeight), title),
     m_pImage(nullptr)
 {
     // add controls-

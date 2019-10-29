@@ -24,7 +24,7 @@ class ImageWidget : public Fl_Widget
 {
     // methods
     public:
-        ImageWidget(int, int, int, int, const std::string&);
+        ImageWidget(int, int, int, int, char*);
         ~ImageWidget();
 
 	    void draw();	                    // FLTK draw function draws the current image.
