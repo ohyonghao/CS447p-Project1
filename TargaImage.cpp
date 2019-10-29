@@ -986,7 +986,7 @@ void TargaImage::Paint_Layer(TargaImage &reference, uint32_t N){
     }
     // Paint all strokes randomly.
 
-    shuffle(strokes.begin(), strokes.end(),default_random_engine(chrono::system_clock::now().time_since_epoch().count()));
+	shuffle(strokes.begin(), strokes.end(), default_random_engine(static_cast<uint32_t>(chrono::system_clock::now().time_since_epoch().count())));
 
     for(auto &s: strokes){
         Paint_Stroke(s);
